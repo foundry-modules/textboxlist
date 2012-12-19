@@ -1,10 +1,10 @@
 $.Controller("TextboxList",
 	{
-		defaults: {
+		defaultOptions: {
 
 			view: {
 				item: ""
-			}.
+			},
 
 			// Options
 			unique: true,
@@ -18,7 +18,6 @@ $.Controller("TextboxList",
 			"{itemRemoveButton}": ".TextboxList-itemRemoveButton",
 			"{textField}": ".TextboxList-textField"
 		}
-
 	},
 	function(self) {
 
@@ -76,7 +75,7 @@ $.Controller("TextboxList",
 					key = (options.caseSensitive) ? title : title.toLowerCase();
 
 				item =
-					(items.hasOwnProperty(key)) ? :
+					(items.hasOwnProperty(key)) ?
 
 						// Get existing item
 						self.itemsByTitle[key] :
