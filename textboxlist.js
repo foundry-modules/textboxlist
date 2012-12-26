@@ -1,9 +1,18 @@
+$.require()
+.library('mvc/controller')
+.done(function(){
+
+// Templates
+$.template("textboxlist/item", '<li class="TextboxList-item"><span class="TextboxList-itemContent"><@== html @></span><a class="TextboxList-itemRemoveButton" href="javascript: void(0);"></a></li>');
+$.template("textboxlist/itemContent", '<@= title @><input type="hidden" name="items" value="<@= id @>"/>');
+
 $.Controller("TextboxList",
 	{
 		defaultOptions: {
 
 			view: {
-				item: ""
+				item: 'textboxlist/item',
+				itemContent: 'textboxlist/itemContent'
 			},
 
 			// Options
@@ -16,6 +25,7 @@ $.Controller("TextboxList",
 
 			"{item}": ".TextboxList-item",
 			"{itemRemoveButton}": ".TextboxList-itemRemoveButton",
+			"{itemContent}": ".TextboxList-itemContent",
 			"{textField}": ".TextboxList-textField"
 		}
 	},
@@ -41,13 +51,23 @@ $.Controller("TextboxList",
 		init: function() {
 
 			// Go through existing item
-			// and create the item data
+			// and reconstruct item data.
 			self.item().each(function(){
-				var item = $(this);
+
+				var item = $(this),
+					itemContent = item.find(self.itemContent.selector);
+
 				self.createItem({
-					id: item.data("id"),
-					title: item.data("title"),
-					html: item.find(".TextboxList-itemTitle").html()
+
+					id: item.data("id") || (function(){
+						var id = $.uid("item-");
+						item.data("id", id);
+						return id;
+					})(),
+
+					title: item.data("title") || $.trim(itemContent.text()),
+
+					html: itemContent.html()
 				});
 			});
 		},
@@ -55,6 +75,11 @@ $.Controller("TextboxList",
 		items: {},
 
 		itemsByTitle: {},
+
+		getItemKey: function(title){
+
+			return (self.options.caseSensitive) ? title : title.toLowerCase();
+		},
 
 		filterItem: function(item) {
 
@@ -67,12 +92,14 @@ $.Controller("TextboxList",
 				item = filterItem.call(self, item);
 			}
 
-			// If item is a string,
-			if ($.isString(item) && item!=="") {
+			var items = self.itemsByTitle,
+				newItem = false;
 
-				var items = self.itemsByTitle,
-					title = item,
-					key = (options.caseSensitive) ? title : title.toLowerCase();
+			// If item is a string,
+			if ($._.isString(item) && item!=="") {
+
+				var title = item,
+					key = self.getItemKey(title);
 
 				item =
 					(items.hasOwnProperty(key)) ?
@@ -81,11 +108,27 @@ $.Controller("TextboxList",
 						self.itemsByTitle[key] :
 
 						// Or create a new one
-						{id: $.uid(), title: title, html: title}
+						(function(){
+							var item = {id: $.uid("item-"), title: title, key: self.getItemKey(title)};
+							item.html = self.view.itemContent(true, item);
+							newItem = true;
+							return item;
+						})();
 			}
 
-			if (options.uniqueItem && self.items.hasOwnProperty(item.id)) {
+			// If items should be unique
+			if (options.unique &&
 
+				// and this item has already been added to the list
+				(self.items.hasOwnProperty(item.id) ||
+
+					// or item of the same title already exists
+					(newItem && items.hasOwnProperty[item.key])
+				)
+
+			   )
+			{
+				// Then don't create this item anymore
 				return null;
 			}
 
@@ -94,12 +137,14 @@ $.Controller("TextboxList",
 
 		createItem: function(item) {
 
+			// Create key for item
+			item.key = self.getItemKey(item.title);
+
 			// Store to items object
-			self.items[id] = item;
+			self.items[item.id] = item;
 
 			// Store to itemsByTitle object
-			var key = (options.caseSensitive) ? item.title : item.toLowerCase();
-			self.itemsByTitle[key] = item;
+			self.itemsByTitle[item.key] = item;
 		},
 
 		deleteItem: function(id) {
@@ -135,7 +180,7 @@ $.Controller("TextboxList",
 
 			// Add item on to the list
 			self.view.item(item)
-				.before(self.textField());
+				.insertBefore(self.textField());
 
 			return item;
 		},
@@ -147,6 +192,11 @@ $.Controller("TextboxList",
 				.remove();
 
 			self.deleteItem(id);
+		},
+
+		"click": function() {
+
+			self.textField().focus();
 		},
 
 		"{itemRemoveButton} click": function(item) {
@@ -183,26 +233,44 @@ $.Controller("TextboxList",
 
 		"{textField} keyup": function(textField, event)
 		{
-			var item = $.trim(self.textField.val());
+			var item = $.trim(self.textField().val());
 
 			// Trigger custom event if exists
 			var textFieldKeyup = self.options.textFieldKeyup;
 
-			if ($.isFunction(textFieldKeyUp)) {
+			if ($.isFunction(textFieldKeyup)) {
 
-				item = textFieldKeyUp.call(self, textField, event, item);
+				item = textFieldKeyup.call(self, textField, event, item);
 			}
 
 			// If item was converted into a null object,
 			// this means the custom keyup event wants to "preventDefault".
 			if (item===null) return;
 
+			// Optimization for compiler
+			var canRemoveItemUsingBackspace = "canRemoveItemUsingBackspace";
+
 			switch(event.keyCode)
 			{
 				// Remove last added item
 				case KEYCODE.BACKSPACE:
-					textField.prev(self.textField.selector)
-						.remove();
+
+					// If the text field is empty
+					if (item==="") {
+
+						// If this is the first time pressing the backspace key
+						if (!self[canRemoveItemUsingBackspace]) {
+
+							// Allow removal of item for subsequent backspace
+							self[canRemoveItemUsingBackspace] = true;
+
+						// If this is the subsequent time pressing the backspace key
+						} else {
+
+							// Then remove the previous item.
+							textField.prev(self.item.selector).remove();
+						}
+					}
 					break;
 
 				// Add new item
@@ -217,8 +285,12 @@ $.Controller("TextboxList",
 					break;
 
 				default:
-					self.populate();
+					// Reset backspace removal state
+					self[canRemoveItemUsingBackspace] = false;
+					break;
 			}
 		}
 	}}
 );
+
+});
