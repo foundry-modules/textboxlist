@@ -385,6 +385,8 @@ $.module('textboxlist/autocomplete', function(){
 						collision: 'none'
 					},
 
+					filterItem: null,
+
 					"{menu}": ".TextboxList-menu",
 					"{menuItem}": ".TextboxList-menuItem"
 				}
@@ -572,8 +574,16 @@ $.module('textboxlist/autocomplete', function(){
 
 						$.each(items, function(i, item){
 
-							// TODO: Preprocessor
-							var html = item.html || item.title;
+							var filterItem = self.options.filterItem;
+
+							if ($.isFunction(filterItem)) {
+								item = filterItem.call(self, item, keyword);
+							}
+
+							// If the item is not an object, stop.
+							if (!$.isPlainObject(item)) return;
+
+							var html = item.menuHtml || item.title;
 
 							self.view.menuItem({html: html})
 								.data("item", item)
@@ -665,17 +675,17 @@ $.module('textboxlist/autocomplete', function(){
 							// If menu is not visible, stop.
 							if (self.hidden) return keyword;
 
-							// see if there's an activated item.
+							// Get activated item.
 							var activeMenuItem = self.getActiveMenuItem();
+
+							// Hide the menu
+							self.hide();
 
 							// If there is an activated item,
 							if (activeMenuItem) {
 
 								// get the item data,
 								var item = activeMenuItem.data("item");
-
-								// hide the menu,
-								self.hide();
 
 								// and return the item data to the textboxlist.
 								return item;
