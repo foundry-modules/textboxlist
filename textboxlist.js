@@ -304,7 +304,7 @@ $.require()
 									var prevItem = textField.prev(self.item.selector);
 
 									// If the item before it exists,
-									if (prevItem) {
+									if (prevItem.length > 0) {
 
 										// Remove the item.
 										self.removeItem(prevItem.data("id"));
@@ -444,7 +444,7 @@ $.module('textboxlist/autocomplete', function(){
 						var func = query;
 
 						self.query = function(keyword) {
-							func.call(self, keyword);
+							return func.call(self, keyword);
 						}
 
 						return;
@@ -499,6 +499,8 @@ $.module('textboxlist/autocomplete', function(){
 
 					self.menuItem().removeClass("active");
 
+					self.render.reset();
+
 					self.hidden = true;
 				},
 
@@ -514,26 +516,41 @@ $.module('textboxlist/autocomplete', function(){
 						key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
 						query = self.queries[key];
 
-					var newQuery = !$.isDeferred(query);
+					var newQuery = !$.isDeferred(query),
 
-					// Query the keyword if:
-					// - The query hasn't been made.
-					// - The query has been rejected.
-					if (newQuery || (!newQuery && query.state()=="rejected")) {
+						runQuery = function(){
 
-						query = self.queries[key] = self.query(keyword);
+							// Query the keyword if:
+							// - The query hasn't been made.
+							// - The query has been rejected.
+							if (newQuery || (!newQuery && query.state()=="rejected")) {
+
+								query = self.queries[key] = self.query(keyword);
+							}
+
+							// When query is done, render items;
+							query
+								.done(
+									self.render(function(items){
+										return [items, keyword];
+									})
+								)
+								.fail(function(){
+									self.hide();
+								});
+						}
+
+					// If this is a new query
+					if (newQuery) {
+
+						// Don't run until we are sure that the user is finished typing
+						clearTimeout(self.queryTask);
+						self.queryTask = setTimeout(runQuery, 250);
+
+					// Else run it immediately
+					} else {
+						runQuery();
 					}
-
-					// When query is done, render items;
-					query
-						.done(
-							self.render(function(items){
-								return [items, keyword];
-							})
-						)
-						.fail(function(){
-							self.hide();
-						});
 				},
 
 				render: $.Enqueue(function(items, keyword){
