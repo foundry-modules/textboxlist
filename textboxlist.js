@@ -373,7 +373,7 @@ $.module('textboxlist/autocomplete', function(){
 
 					caseSensitive: false,
 
-					onlyFromSuggestions: false,
+					exclusive: false,
 
 					// Accepts url, function or array of objects.
 					// If function, it should return a deferred object.
@@ -660,6 +660,8 @@ $.module('textboxlist/autocomplete', function(){
 
 				textFieldKeyup: function(textField, event, keyword) {
 
+					var onlyFromSuggestions = self.options.exclusive;
+
 					switch (event.keyCode) {
 
 						// If escape is pressed,
@@ -673,7 +675,13 @@ $.module('textboxlist/autocomplete', function(){
 						case KEYCODE.ENTER:
 
 							// If menu is not visible, stop.
-							if (self.hidden) return keyword;
+							if (self.hidden) {
+
+								// If we only accept suggested items,
+								// don't let textboxlist add the keyword
+								// by returning null.
+								return (onlyFromSuggestions) ? null : keyword;
+							}
 
 							// Get activated item.
 							var activeMenuItem = self.getActiveMenuItem();
@@ -689,6 +697,10 @@ $.module('textboxlist/autocomplete', function(){
 
 								// and return the item data to the textboxlist.
 								return item;
+
+							} else if (onlyFromSuggestions) {
+
+								return null;
 							}
 							break;
 
