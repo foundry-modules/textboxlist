@@ -25,6 +25,10 @@ $.require()
 
 		$.Controller("TextboxList",
 			{
+				isPlugin: true,
+
+				pluginName: "textboxlist",
+
 				defaultOptions: {
 
 					view: {
