@@ -256,12 +256,34 @@ $.require()
 
 					textField.data("realEnterKey", keydownIsEnter && keypressIsEnter);
 
+					var item = $.trim(self.textField().val());
+
 					// Trigger custom event
 					var textFieldKeypress = self.options.textFieldKeypress;
 
-					var item = $.trim(self.textField().val());
+					if ($.isFunction(textFieldKeypress)) {
 
-					$.isFunction(textFieldKeypress) && textFieldKeypress.call(self, textField, event, item);
+						item = textFieldKeypress.call(self, textField, event, item);
+					}
+
+					// If item was converted into a null object,
+					// this means the custom keyup event wants to "preventDefault".
+					if (item===undefined || item===null) return;
+
+					switch (event.keyCode) {
+
+						// Add new item
+						case KEYCODE.ENTER:
+
+							if (textField.data("realEnterKey")) {
+
+								self.addItem(item);
+
+								// and clear text field.
+								textField.val("");
+							}
+							break;
+					}
 				},
 
 				"{textField} keyup": function(textField, event)
@@ -283,7 +305,7 @@ $.require()
 					// Optimization for compiler
 					var canRemoveItemUsingBackspace = "canRemoveItemUsingBackspace";
 
-					switch(event.keyCode) {
+					switch (event.keyCode) {
 
 						// Remove last added item
 						case KEYCODE.BACKSPACE:
@@ -310,18 +332,6 @@ $.require()
 										self.removeItem(prevItem.data("id"));
 									}
 								}
-							}
-							break;
-
-						// Add new item
-						case KEYCODE.ENTER:
-
-							if (textField.data("realEnterKey")) {
-
-								self.addItem(item);
-
-								// and clear text field.
-								textField.val("");
 							}
 							break;
 
@@ -609,13 +619,23 @@ $.module('textboxlist/autocomplete', function(){
 
 				textFieldKeypress: function(textField, event, keyword) {
 
-					// If menu is not visible, stop.
-					if (self.hidden) return;
+					var onlyFromSuggestions = self.options.exclusive;
 
+					// If menu is not visible, stop.
+					if (self.hidden) {
+
+						// If we only accept suggested items,
+						// don't let textboxlist add the keyword
+						// by returning null.
+						return (onlyFromSuggestions) ? null : keyword;
+					}
+
+					// Get active menu item
 					var activeMenuItem = self.getActiveMenuItem();
 
 					switch (event.keyCode) {
 
+						// If up key is pressed
 						case KEYCODE.UP:
 
 							// Deactivate all menu item
@@ -636,6 +656,7 @@ $.module('textboxlist/autocomplete', function(){
 							}
 							break;
 
+						// If down key is pressed
 						case KEYCODE.DOWN:
 
 							// Deactivate all menu item
@@ -655,33 +676,9 @@ $.module('textboxlist/autocomplete', function(){
 									.addClass("active");
 							}
 							break;
-					}
-				},
 
-				textFieldKeyup: function(textField, event, keyword) {
-
-					var onlyFromSuggestions = self.options.exclusive;
-
-					switch (event.keyCode) {
-
-						// If escape is pressed,
-						case KEYCODE.ESCAPE:
-
-							// hide menu.
-							self.hide();
-							break;
-
-						// If enter is pressed,
+						// If enter is pressed
 						case KEYCODE.ENTER:
-
-							// If menu is not visible, stop.
-							if (self.hidden) {
-
-								// If we only accept suggested items,
-								// don't let textboxlist add the keyword
-								// by returning null.
-								return (onlyFromSuggestions) ? null : keyword;
-							}
 
 							// Get activated item.
 							var activeMenuItem = self.getActiveMenuItem();
@@ -704,6 +701,30 @@ $.module('textboxlist/autocomplete', function(){
 							}
 							break;
 
+						// If escape is pressed,
+						case KEYCODE.ESCAPE:
+
+							// hide menu.
+							self.hide();
+							break;
+					}
+
+					return (onlyFromSuggestions) ? null : keyword;
+				},
+
+				textFieldKeyup: function(textField, event, keyword) {
+
+					var onlyFromSuggestions = self.options.exclusive;
+
+					switch (event.keyCode) {
+
+						case KEYCODE.UP:
+						case KEYCODE.DOWN:
+						case KEYCODE.ENTER:
+						case KEYCODE.ESCAPE:
+							// Don't repopulate if these keys were pressed.
+							break;
+
 						default:
 
 							// If no keyword given or keyword doesn't meet minimum query length, stop.
@@ -719,7 +740,7 @@ $.module('textboxlist/autocomplete', function(){
 							break;
 					}
 
-					return keyword;
+					return (onlyFromSuggestions) ? null : keyword;
 				},
 
 				"{menuItem} click": function(menuItem) {
