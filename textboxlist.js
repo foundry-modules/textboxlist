@@ -358,413 +358,408 @@ $.module('textboxlist/autocomplete', function(){
 
 	var module = this;
 
-	$.require()
-		.library('mvc/controller', 'ui/position')
-		.done(function(){
+	$.template("textboxlist/menu", '<div class="TextboxList-autocomplete"><div class="inner"><ul class="TextboxList-menu"></ul></div></div>');
+	$.template("textboxlist/menuItem", '<li class="TextboxList-menuItem">[%== html %]</li>');
 
-			$.template("textboxlist/menu", '<div class="TextboxList-autocomplete"><div class="inner"><ul class="TextboxList-menu"></ul></div></div>');
-			$.template("textboxlist/menuItem", '<li class="TextboxList-menuItem">[%== html %]</li>');
+	$.Controller("TextboxList.Autocomplete",
+	{
+		defaultOptions: {
 
-			$.Controller("TextboxList.Autocomplete",
-			{
-				defaultOptions: {
-
-					view: {
-						menu: "textboxlist/menu",
-						menuItem: "textboxlist/menuItem"
-					},
-
-					minLength: 1,
-
-					limit: 10,
-
-					highlight: true,
-
-					caseSensitive: false,
-
-					exclusive: false,
-
-					// Accepts url, function or array of objects.
-					// If function, it should return a deferred object.
-					query: null,
-
-					position: {
-						my: 'left top',
-						at: 'left bottom',
-						collision: 'none'
-					},
-
-					filterItem: null,
-
-					"{menu}": ".TextboxList-menu",
-					"{menuItem}": ".TextboxList-menuItem"
-				}
+			view: {
+				menu: "textboxlist/menu",
+				menuItem: "textboxlist/menuItem"
 			},
-			function(self) { return {
 
-				init: function() {
+			minLength: 1,
 
-					// Destroy controller
-					if (!self.element.data(self.Class.fullName)) {
+			limit: 10,
 
-						self.destroy();
+			highlight: true,
 
-						// And reimplement on the context menu we created ourselves
-						self.view.menu()
-							.appendTo("body")
-							.data(self.Class.fullName, true)
-							.implement(TextboxList.Autocomplete, self.options);
+			caseSensitive: false,
 
-						return;
-					}
+			exclusive: false,
 
-					// Bind to the keyup event
-					self.textboxList.update({
-						textFieldKeypress: self.textFieldKeypress,
-						textFieldKeyup: self.textFieldKeyup
-					});
+			// Accepts url, function or array of objects.
+			// If function, it should return a deferred object.
+			query: null,
 
-					// Set the position to be relative to the textboxList
-					self.options.position.of = self.textboxList.element;
+			position: {
+				my: 'left top',
+				at: 'left bottom',
+				collision: 'none'
+			},
 
-					self.initQuery();
-				},
+			filterItem: null,
 
-				initQuery: function() {
+			"{menu}": ".TextboxList-menu",
+			"{menuItem}": ".TextboxList-menuItem"
+		}
+	},
+	function(self) { return {
 
-					// Determine query method
-					var query = self.options.query || self.textboxList.element.data("query");
+		init: function() {
 
-					// TODO: Wrap up query options and pass to query URL & query function.
+			// Destroy controller
+			if (!self.element.data(self.Class.fullName)) {
 
-					// Query URL
-					if ($.isUrl(query)) {
+				self.destroy();
 
-						var url = query;
+				// And reimplement on the context menu we created ourselves
+				self.view.menu()
+					.appendTo("body")
+					.data(self.Class.fullName, true)
+					.implement(TextboxList.Autocomplete, self.options);
 
-						self.query = function(keyword){
-							return $.ajax(url + keyword);
-						}
+				return;
+			}
 
-						return;
-					}
+			// Bind to the keyup event
+			self.textboxList.update({
+				textFieldKeypress: self.textFieldKeypress,
+				textFieldKeyup: self.textFieldKeyup
+			});
 
-					// Query function
-					if ($.isFunction(query)) {
+			// Set the position to be relative to the textboxList
+			self.options.position.of = self.textboxList.element;
 
-						var func = query;
+			self.initQuery();
+		},
 
-						self.query = function(keyword) {
-							return func.call(self, keyword);
-						}
+		initQuery: function() {
 
-						return;
-					}
+			// Determine query method
+			var query = self.options.query || self.textboxList.element.data("query");
 
-					// Query dataset
-					if ($.isArray(query)) {
+			// TODO: Wrap up query options and pass to query URL & query function.
 
-						var dataset = query;
+			// Query URL
+			if ($.isUrl(query)) {
 
-						self.query = function(keyword) {
+				var url = query;
 
-							var task = $.Deferred(),
-								keyword = keyword.toLowerCase();
+				self.query = function(keyword){
+					return $.ajax(url + keyword);
+				}
 
-							// Fork this process
-							// so it won't choke on large dataset.
-							setTimeout(function(){
+				return;
+			}
 
-								var result = $.grep(dataset, function(item){
-									return item.title.toLowerCase().indexOf(keyword) > -1;
-								});
+			// Query function
+			if ($.isFunction(query)) {
 
-								task.resolve(result);
+				var func = query;
 
-							}, 0);
+				self.query = function(keyword) {
+					return func.call(self, keyword);
+				}
 
-							return task;
-						}
+				return;
+			}
 
-						return;
-					}
-				},
+			// Query dataset
+			if ($.isArray(query)) {
 
-				show: function() {
+				var dataset = query;
 
-					var textboxList = self.textboxList.element;
+				self.query = function(keyword) {
 
-					self.element
-						.show()
-						.css({
-							width: textboxList.outerWidth()
-						})
-						.position(self.options.position);
+					var task = $.Deferred(),
+						keyword = keyword.toLowerCase();
 
-					self.hidden = false;
-				},
-
-				hide: function() {
-
-					self.element.hide();
-
-					self.menuItem().removeClass("active");
-
-					self.render.reset();
-
-					self.hidden = true;
-				},
-
-				queries: {},
-
-				populated: false,
-
-				populate: function(keyword) {
-
-					self.populated = false;
-
-					var options = self.options,
-						key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
-						query = self.queries[key];
-
-					var newQuery = !$.isDeferred(query),
-
-						runQuery = function(){
-
-							// Query the keyword if:
-							// - The query hasn't been made.
-							// - The query has been rejected.
-							if (newQuery || (!newQuery && query.state()=="rejected")) {
-
-								query = self.queries[key] = self.query(keyword);
-							}
-
-							// When query is done, render items;
-							query
-								.done(
-									self.render(function(items){
-										return [items, keyword];
-									})
-								)
-								.fail(function(){
-									self.hide();
-								});
-						}
-
-					// If this is a new query
-					if (newQuery) {
-
-						// Don't run until we are sure that the user is finished typing
-						clearTimeout(self.queryTask);
-						self.queryTask = setTimeout(runQuery, 250);
-
-					// Else run it immediately
-					} else {
-						runQuery();
-					}
-				},
-
-				render: $.Enqueue(function(items, keyword){
-
-					if (!$.isArray(items)) return;
-
-					// If there are no items, hide menu.
-					if (items.length < 1) {
-						self.hide();
-						return;
-					}
-
-					var menu = self.menu();
-
-					if (menu.data("keyword")!==keyword)
-					{
-						// Clear out menu items
-						menu.empty();
-
-						$.each(items, function(i, item){
-
-							var filterItem = self.options.filterItem;
-
-							if ($.isFunction(filterItem)) {
-								item = filterItem.call(self, item, keyword);
-							}
-
-							// If the item is not an object, stop.
-							if (!$.isPlainObject(item)) return;
-
-							var html = item.menuHtml || item.title;
-
-							self.view.menuItem({html: html})
-								.data("item", item)
-								.appendTo(menu);
-						});
-
-						menu.data("keyword", keyword);
-					}
-
-					self.show();
-				}),
-
-				getActiveMenuItem: function() {
-
-					var activeMenuItem = self.menuItem(".active");
-
-					if (activeMenuItem.length < 1) {
-						activeMenuItem = undefined;
-					}
-
-					return activeMenuItem;
-				},
-
-				textFieldKeypress: function(textField, event, keyword) {
-
-					var onlyFromSuggestions = self.options.exclusive;
-
-					// If menu is not visible, stop.
-					if (self.hidden) {
-
-						// If we only accept suggested items,
-						// don't let textboxlist add the keyword
-						// by returning null.
-						return (onlyFromSuggestions) ? null : keyword;
-					}
-
-					// Get active menu item
-					var activeMenuItem = self.getActiveMenuItem();
-
-					switch (event.keyCode) {
-
-						// If up key is pressed
-						case KEYCODE.UP:
-
-							// Deactivate all menu item
-							self.menuItem().removeClass("active");
-
-							// If no menu items are activated,
-							if (!activeMenuItem) {
-
-								// activate the last one.
-								self.menuItem(":last").addClass("active");
-
-							// Else find the menu item before it,
-							} else {
-
-								// and activate it.
-								activeMenuItem.prev(self.menuItem.selector)
-									.addClass("active");
-							}
-							break;
-
-						// If down key is pressed
-						case KEYCODE.DOWN:
-
-							// Deactivate all menu item
-							self.menuItem().removeClass("active");
-
-							// If no menu items are activated,
-							if (!activeMenuItem) {
-
-								// activate the first one.
-								self.menuItem(":first").addClass("active");
-
-							// Else find the menu item after it,
-							} else {
-
-								// and activate it.
-								activeMenuItem.next(self.menuItem.selector)
-									.addClass("active");
-							}
-							break;
-
-						// If enter is pressed
-						case KEYCODE.ENTER:
-
-							// Get activated item.
-							var activeMenuItem = self.getActiveMenuItem();
-
-							// Hide the menu
-							self.hide();
-
-							// If there is an activated item,
-							if (activeMenuItem) {
-
-								// get the item data,
-								var item = activeMenuItem.data("item");
-
-								// and return the item data to the textboxlist.
-								return item;
-
-							} else if (onlyFromSuggestions) {
-
-								return null;
-							}
-							break;
-
-						// If escape is pressed,
-						case KEYCODE.ESCAPE:
-
-							// hide menu.
-							self.hide();
-							break;
-					}
-
-					return (onlyFromSuggestions) ? null : keyword;
-				},
-
-				textFieldKeyup: function(textField, event, keyword) {
-
-					var onlyFromSuggestions = self.options.exclusive;
-
-					switch (event.keyCode) {
-
-						case KEYCODE.UP:
-						case KEYCODE.DOWN:
-						case KEYCODE.ENTER:
-						case KEYCODE.ESCAPE:
-							// Don't repopulate if these keys were pressed.
-							break;
-
-						default:
-
-							// If no keyword given or keyword doesn't meet minimum query length, stop.
-							if (keyword==="" || (keyword.length < self.options.minLength)) {
-
-								self.hide();
-
-							// Else populate suggestions.
-							} else {
-
-								self.populate(keyword);
-							}
-							break;
-					}
-
-					return (onlyFromSuggestions) ? null : keyword;
-				},
-
-				"{menuItem} click": function(menuItem) {
-
-					// Hide context menu
-					self.hide();
-
-					// Add item
-					var item = menuItem.data("item");
-					self.textboxList.addItem(item);
-
-					// Get text field & clear text field
-					var textField = self.textboxList.textField().val("");
-
-					// Refocus text field
+					// Fork this process
+					// so it won't choke on large dataset.
 					setTimeout(function(){
 
-						// Due to event delegation, this needs to be slightly delayed.
-						textField.focus();
-					}, 150);
-				}
-			}}
-			);
+						var result = $.grep(dataset, function(item){
+							return item.title.toLowerCase().indexOf(keyword) > -1;
+						});
 
-			module.resolve(TextboxList.Autocomplete);
-		});
+						task.resolve(result);
+
+					}, 0);
+
+					return task;
+				}
+
+				return;
+			}
+		},
+
+		show: function() {
+
+			var textboxList = self.textboxList.element;
+
+			self.element
+				.show()
+				.css({
+					width: textboxList.outerWidth()
+				})
+				.position(self.options.position);
+
+			self.hidden = false;
+		},
+
+		hide: function() {
+
+			self.element.hide();
+
+			self.menuItem().removeClass("active");
+
+			self.render.reset();
+
+			self.hidden = true;
+		},
+
+		queries: {},
+
+		populated: false,
+
+		populate: function(keyword) {
+
+			self.populated = false;
+
+			var options = self.options,
+				key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
+				query = self.queries[key];
+
+			var newQuery = !$.isDeferred(query),
+
+				runQuery = function(){
+
+					// Query the keyword if:
+					// - The query hasn't been made.
+					// - The query has been rejected.
+					if (newQuery || (!newQuery && query.state()=="rejected")) {
+
+						query = self.queries[key] = self.query(keyword);
+					}
+
+					// When query is done, render items;
+					query
+						.done(
+							self.render(function(items){
+								return [items, keyword];
+							})
+						)
+						.fail(function(){
+							self.hide();
+						});
+				}
+
+			// If this is a new query
+			if (newQuery) {
+
+				// Don't run until we are sure that the user is finished typing
+				clearTimeout(self.queryTask);
+				self.queryTask = setTimeout(runQuery, 250);
+
+			// Else run it immediately
+			} else {
+				runQuery();
+			}
+		},
+
+		render: $.Enqueue(function(items, keyword){
+
+			if (!$.isArray(items)) return;
+
+			// If there are no items, hide menu.
+			if (items.length < 1) {
+				self.hide();
+				return;
+			}
+
+			var menu = self.menu();
+
+			if (menu.data("keyword")!==keyword)
+			{
+				// Clear out menu items
+				menu.empty();
+
+				$.each(items, function(i, item){
+
+					var filterItem = self.options.filterItem;
+
+					if ($.isFunction(filterItem)) {
+						item = filterItem.call(self, item, keyword);
+					}
+
+					// If the item is not an object, stop.
+					if (!$.isPlainObject(item)) return;
+
+					var html = item.menuHtml || item.title;
+
+					self.view.menuItem({html: html})
+						.data("item", item)
+						.appendTo(menu);
+				});
+
+				menu.data("keyword", keyword);
+			}
+
+			self.show();
+		}),
+
+		getActiveMenuItem: function() {
+
+			var activeMenuItem = self.menuItem(".active");
+
+			if (activeMenuItem.length < 1) {
+				activeMenuItem = undefined;
+			}
+
+			return activeMenuItem;
+		},
+
+		textFieldKeypress: function(textField, event, keyword) {
+
+			var onlyFromSuggestions = self.options.exclusive;
+
+			// If menu is not visible, stop.
+			if (self.hidden) {
+
+				// If we only accept suggested items,
+				// don't let textboxlist add the keyword
+				// by returning null.
+				return (onlyFromSuggestions) ? null : keyword;
+			}
+
+			// Get active menu item
+			var activeMenuItem = self.getActiveMenuItem();
+
+			switch (event.keyCode) {
+
+				// If up key is pressed
+				case KEYCODE.UP:
+
+					// Deactivate all menu item
+					self.menuItem().removeClass("active");
+
+					// If no menu items are activated,
+					if (!activeMenuItem) {
+
+						// activate the last one.
+						self.menuItem(":last").addClass("active");
+
+					// Else find the menu item before it,
+					} else {
+
+						// and activate it.
+						activeMenuItem.prev(self.menuItem.selector)
+							.addClass("active");
+					}
+					break;
+
+				// If down key is pressed
+				case KEYCODE.DOWN:
+
+					// Deactivate all menu item
+					self.menuItem().removeClass("active");
+
+					// If no menu items are activated,
+					if (!activeMenuItem) {
+
+						// activate the first one.
+						self.menuItem(":first").addClass("active");
+
+					// Else find the menu item after it,
+					} else {
+
+						// and activate it.
+						activeMenuItem.next(self.menuItem.selector)
+							.addClass("active");
+					}
+					break;
+
+				// If enter is pressed
+				case KEYCODE.ENTER:
+
+					// Get activated item.
+					var activeMenuItem = self.getActiveMenuItem();
+
+					// Hide the menu
+					self.hide();
+
+					// If there is an activated item,
+					if (activeMenuItem) {
+
+						// get the item data,
+						var item = activeMenuItem.data("item");
+
+						// and return the item data to the textboxlist.
+						return item;
+
+					} else if (onlyFromSuggestions) {
+
+						return null;
+					}
+					break;
+
+				// If escape is pressed,
+				case KEYCODE.ESCAPE:
+
+					// hide menu.
+					self.hide();
+					break;
+			}
+
+			return (onlyFromSuggestions) ? null : keyword;
+		},
+
+		textFieldKeyup: function(textField, event, keyword) {
+
+			var onlyFromSuggestions = self.options.exclusive;
+
+			switch (event.keyCode) {
+
+				case KEYCODE.UP:
+				case KEYCODE.DOWN:
+				case KEYCODE.ENTER:
+				case KEYCODE.ESCAPE:
+					// Don't repopulate if these keys were pressed.
+					break;
+
+				default:
+
+					// If no keyword given or keyword doesn't meet minimum query length, stop.
+					if (keyword==="" || (keyword.length < self.options.minLength)) {
+
+						self.hide();
+
+					// Else populate suggestions.
+					} else {
+
+						self.populate(keyword);
+					}
+					break;
+			}
+
+			return (onlyFromSuggestions) ? null : keyword;
+		},
+
+		"{menuItem} click": function(menuItem) {
+
+			// Hide context menu
+			self.hide();
+
+			// Add item
+			var item = menuItem.data("item");
+			self.textboxList.addItem(item);
+
+			// Get text field & clear text field
+			var textField = self.textboxList.textField().val("");
+
+			// Refocus text field
+			setTimeout(function(){
+
+				// Due to event delegation, this needs to be slightly delayed.
+				textField.focus();
+			}, 150);
+		}
+	}}
+	);
+
+	module.resolve(TextboxList.Autocomplete);
 });
 // Autocomplete ends
