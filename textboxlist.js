@@ -15,8 +15,9 @@ var KEYCODE = {
 
 
 // Templates
-$.template("textboxlist/item", '<li class="TextboxList-item"><span class="TextboxList-itemContent"><@== html @></span><a class="TextboxList-itemRemoveButton" href="javascript: void(0);"></a></li>');
-$.template("textboxlist/itemContent", '<@= title @><input type="hidden" name="items" value="<@= id @>"/>');
+$.template("textboxlist/item", '<li class="TextboxList-item"><span class="TextboxList-itemContent">[%== html %]</span><a class="TextboxList-itemRemoveButton" href="javascript: void(0);"></a></li>');
+$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
+$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
 
 $.Controller("TextboxList",
 	{
@@ -362,7 +363,7 @@ $.module('textboxlist/autocomplete', function(){
 		.done(function(){
 
 			$.template("textboxlist/menu", '<div class="TextboxList-autocomplete"><div class="inner"><ul class="TextboxList-menu"></ul></div></div>');
-			$.template("textboxlist/menuItem", '<li class="TextboxList-menuItem"><@== html @></li>');
+			$.template("textboxlist/menuItem", '<li class="TextboxList-menuItem">[%== html %]</li>');
 
 			$.Controller("TextboxList.Autocomplete",
 			{
