@@ -21,8 +21,6 @@ $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="it
 
 $.Controller("TextboxList",
 	{
-		isPlugin: true,
-
 		pluginName: "textboxlist",
 
 		defaultOptions: {
@@ -47,11 +45,6 @@ $.Controller("TextboxList",
 			"{itemRemoveButton}": ".TextboxList-itemRemoveButton",
 			"{itemContent}": ".TextboxList-itemContent",
 			"{textField}": ".TextboxList-textField"
-		},
-
-		implement: function(el) {
-			if (el.controller(TextboxList)) return;
-			el.implement(TextboxList, {}, function(){this.click();});
 		}
 	},
 	function(self) {
@@ -86,15 +79,14 @@ $.Controller("TextboxList",
 
 			if (autocomplete || self.element.data("query")) {
 
-				// Implement autocomplete when the module is ready
-				$.module("textboxlist/autocomplete")
-					.done(function(){
-
-						self.element.implement(
-							TextboxList.Autocomplete,
-							$.extend({controller: {textboxList: self}}, autocomplete || {})
-						);
-					});
+				self.element
+					.addController(
+						$.Controller.TextboxList.Autocomplete,
+						$.extend(
+							{"{textboxList}": self}	,
+							autocomplete || {}
+						)
+					);
 			}
 		},
 
@@ -346,10 +338,10 @@ $.Controller("TextboxList",
 
 $(document)
 	.on('click.textboxlist.data-api', '[data-provide="textboxlist"]', function(event){
-		TextboxList.implement($(this));
+		$(this).addController($.Controller.TextboxList).textField().focus();
 	})
 	.on('focus.textboxlist.data-api', '[data-provide="textboxlist"] .TextboxList-textField', function(event){
-		TextboxList.implement($(this).parents('.TextboxList'));
+		$(this).parents(".TextboxList").addController($.Controller.TextboxList);
 	});
 // Textboxlist ends
 
@@ -409,7 +401,7 @@ $.module('textboxlist/autocomplete', function(){
 				self.view.menu()
 					.appendTo("body")
 					.data(self.Class.fullName, true)
-					.implement(TextboxList.Autocomplete, self.options);
+					.addController(self.Class, self.options);
 
 				return;
 			}
@@ -760,6 +752,6 @@ $.module('textboxlist/autocomplete', function(){
 	}}
 	);
 
-	module.resolve(TextboxList.Autocomplete);
+	module.resolve($.Controller.TextboxList.Autocomplete);
 });
 // Autocomplete ends
