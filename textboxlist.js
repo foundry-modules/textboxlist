@@ -30,8 +30,7 @@ $.Controller("TextboxList",
 				itemContent: 'textboxlist/itemContent'
 			},
 
-			// Autocomplete
-			autocomplete: null,
+			plugin: {},
 
 			// Options
 			unique: true,
@@ -45,7 +44,9 @@ $.Controller("TextboxList",
 			"{itemRemoveButton}": ".TextboxList-itemRemoveButton",
 			"{itemContent}": ".TextboxList-itemContent",
 			"{textField}": ".TextboxList-textField"
-		}
+		},
+
+		hostname: "textboxList"
 	},
 	function(self) {
 
@@ -75,18 +76,8 @@ $.Controller("TextboxList",
 			});
 
 			// Determine if there's autocomplete
-			var autocomplete = self.options.autocomplete;
-
-			if (autocomplete || self.element.data("query")) {
-
-				self.element
-					.addController(
-						$.Controller.TextboxList.Autocomplete,
-						$.extend(
-							{"{textboxList}": self}	,
-							autocomplete || {}
-						)
-					);
+			if (self.options.plugin.autocomplete || self.element.data("query")) {
+				self.addPlugin("autocomplete");
 			}
 		},
 
