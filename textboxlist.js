@@ -79,6 +79,11 @@ $.Controller("TextboxList",
 			if (self.options.plugin.autocomplete || self.element.data("query")) {
 				self.addPlugin("autocomplete");
 			}
+
+			// Prevent form submission
+			self.on("keypress", self.textField(), function(event){
+				if (event.keyCode==KEYCODE.ENTER) return event.preventDefault();
+			});
 		},
 
 		items: {},
