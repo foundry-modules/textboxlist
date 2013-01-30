@@ -212,7 +212,9 @@ $.Controller("TextboxList",
 			self.textField().focus();
 		},
 
-		"{itemRemoveButton} click": function(item) {
+		"{itemRemoveButton} click": function(button) {
+
+			var item = button.parents(self.item.selector);
 
 			self.removeItem(item.data("id"));
 		},
