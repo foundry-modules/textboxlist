@@ -15,7 +15,7 @@ var KEYCODE = {
 
 
 // Templates
-$.template("textboxlist/item", '<li class="TextboxList-item"><span class="TextboxList-itemContent">[%== html %]</span><a class="TextboxList-itemRemoveButton" href="javascript: void(0);"></a></li>');
+$.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><a class="textboxlist-itemRemoveButton" href="javascript: void(0);" data-textboxlist-itemRemoveButton></a></div>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
 
@@ -40,10 +40,10 @@ $.Controller("TextboxList",
 			// Events
 			filter: null,
 
-			"{item}": ".TextboxList-item",
-			"{itemRemoveButton}": ".TextboxList-itemRemoveButton",
-			"{itemContent}": ".TextboxList-itemContent",
-			"{textField}": ".TextboxList-textField"
+			"{item}"            : "[data-textboxlist-item]",
+			"{itemContent}"     : "[data-textboxlist-itemContent]",
+			"{itemRemoveButton}": "[data-textboxlist-itemRemoveButton]",
+			"{textField}"       : "[data-textboxlist-textField]"
 		},
 
 		hostname: "textboxList"
@@ -328,11 +328,11 @@ $.Controller("TextboxList",
 );
 
 $(document)
-	.on('click.textboxlist.data-api', '[data-provide="textboxlist"]', function(event){
+	.on('click.textboxlist.data-api', '[data-textboxlist]', function(event){
 		$(this).addController($.Controller.TextboxList).textField().focus();
 	})
-	.on('focus.textboxlist.data-api', '[data-provide="textboxlist"] .TextboxList-textField', function(event){
-		$(this).parents(".TextboxList").addController($.Controller.TextboxList);
+	.on('focus.textboxlist.data-api', '[data-textboxlist] [data-textboxlist-textField]', function(event){
+		$(this).parents("[data-textboxlist]").addController($.Controller.TextboxList);
 	});
 // Textboxlist ends
 
@@ -341,8 +341,8 @@ $.module('textboxlist/autocomplete', function(){
 
 	var module = this;
 
-	$.template("textboxlist/menu", '<div class="TextboxList-autocomplete"><div class="inner"><ul class="TextboxList-menu"></ul></div></div>');
-	$.template("textboxlist/menuItem", '<li class="TextboxList-menuItem">[%== html %]</li>');
+	$.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner"><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
+	$.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
 
 	$.Controller("TextboxList.Autocomplete",
 	{
@@ -375,8 +375,8 @@ $.module('textboxlist/autocomplete', function(){
 
 			filterItem: null,
 
-			"{menu}": ".TextboxList-menu",
-			"{menuItem}": ".TextboxList-menuItem"
+			"{menu}": "[data-textboxlist-menu]",
+			"{menuItem}": "[data-textboxlist-menuItem]"
 		}
 	},
 	function(self) { return {
