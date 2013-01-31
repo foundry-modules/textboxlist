@@ -38,7 +38,7 @@ $.Controller("TextboxList",
 			max: null,
 
 			// Events
-			filter: null,
+			filterItem: null,
 
 			"{item}"            : "[data-textboxlist-item]",
 			"{itemContent}"     : "[data-textboxlist-itemContent]",
@@ -746,6 +746,18 @@ $.module('textboxlist/autocomplete', function(){
 				// Due to event delegation, this needs to be slightly delayed.
 				textField.focus();
 			}, 150);
+		},
+
+		"{menuItem} mouseover": function(menuItem) {
+
+			self.menuItem().removeClass("active");
+
+			menuItem.addClass("active");
+		},
+
+		"{menuItem} mouseout": function(menuItem) {
+
+			self.menuItem().removeClass("active");
 		}
 	}}
 	);
