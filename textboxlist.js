@@ -228,7 +228,7 @@ $.Controller("TextboxList",
 				var item = $(this),
 					id = item.data("id");
 
-				return self.items[id];
+				addedItems.push(self.items[id]);
 			});
 
 			return addedItems;
