@@ -201,16 +201,22 @@ $.Controller("TextboxList",
 				.attr("data-id", item.id)
 				.insertBefore(self.textField());
 
+			self.trigger("addItem", [item]);
+
 			return item;
 		},
 
 		removeItem: function(id) {
+
+			var item = self.items[id];
 
 			// Remove item from the list
 			self.item("[data-id=" + id + "]")
 				.remove();
 
 			self.deleteItem(id);
+
+			self.trigger("removeItem", [item]);
 		},
 
 		"click": function() {
