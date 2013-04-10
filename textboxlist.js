@@ -219,6 +219,13 @@ $.Controller("TextboxList",
 			self.trigger("removeItem", [item]);
 		},
 
+		clearItems: function() {
+
+			self.item().each(function(){
+				self.removeItem($(this).data("id"));
+			});
+		},
+
 		getAddedItems: function() {
 
 			var addedItems = [];
