@@ -1,11 +1,7 @@
+all: modularize-script minify-script
+
 include ../../build/modules.mk
 
 MODULE = textboxlist
-FILENAME = ${MODULE}.js
-SOURCE = textboxlist.js
-PRODUCTION = ${PRODUCTION_DIR}/${FILENAME}
-DEVELOPMENT = ${DEVELOPMENT_DIR}/${FILENAME}
-
-all:
-	${MODULARIZE} -n "${MODULE}" ${SOURCE} > ${DEVELOPMENT}
-	${UGLIFYJS} ${DEVELOPMENT} > ${PRODUCTION}
+SOURCE_SCRIPT_FOLDER = .
+SOURCE_SCRIPT_FILE_PREFIX = 
