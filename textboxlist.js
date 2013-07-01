@@ -54,9 +54,13 @@ $.Controller("TextboxList",
 
 		init: function() {
 
+			var textField = self.textField();
+
 			// Make textfield expandable
-			self.textField()
-				.autosizeInput();
+			textField.autosizeInput();
+
+			// Keep the original placeholder text value
+			textField.data("placeholderText", textField.attr("placeholder"));
 
 			// Go through existing item
 			// and reconstruct item data.
@@ -88,6 +92,19 @@ $.Controller("TextboxList",
 			self.on("keypress", self.textField(), function(event){
 				if (event.keyCode==KEYCODE.ENTER) return event.preventDefault();
 			});
+		},
+
+		setLayout: function() {
+
+			var textField = self.textField(),
+				placeholderText = textField.data("placeholderText");
+
+			// Don't show placeholder if there are items.
+			if (self.item().length > 0) {
+				placeholderText = "";
+			}
+
+			self.textField().attr("placeholder", placeholderText);
 		},
 
 		items: {},
@@ -247,6 +264,16 @@ $.Controller("TextboxList",
 
 		"click": function() {
 			self.textField().focus();
+		},
+
+		"{self} addItem": function() {
+
+			self.setLayout();
+		},
+
+		"{self} removeItem": function() {
+
+			self.setLayout();
 		},
 
 		"{itemRemoveButton} click": function(button) {
