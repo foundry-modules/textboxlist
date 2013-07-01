@@ -54,6 +54,10 @@ $.Controller("TextboxList",
 
 		init: function() {
 
+			// Make textfield expandable
+			self.textField()
+				.autosizeInput();
+
 			// Go through existing item
 			// and reconstruct item data.
 			self.item().each(function(){
