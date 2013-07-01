@@ -104,7 +104,10 @@ $.Controller("TextboxList",
 				placeholderText = "";
 			}
 
-			self.textField().attr("placeholder", placeholderText);
+			textField
+				.attr("placeholder", placeholderText)
+				.data("autosizeInputInstance")
+				.update();
 		},
 
 		items: {},
