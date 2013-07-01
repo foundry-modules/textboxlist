@@ -15,7 +15,7 @@ var KEYCODE = {
 
 
 // Templates
-$.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><a class="textboxlist-itemRemoveButton" href="javascript: void(0);" data-textboxlist-itemRemoveButton></a></div>');
+$.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
 
