@@ -466,6 +466,9 @@ $.module('textboxlist/autocomplete', function(){
 				return;
 			}
 
+			self.textboxList.autocomplete = self;
+			self.textboxList.pluginInstances["autocomplete"] = self;
+
 			// Bind to the keyup event
 			self.textboxList.update({
 				textFieldKeypress: self.textFieldKeypress,
@@ -476,6 +479,9 @@ $.module('textboxlist/autocomplete', function(){
 			self.options.position.of = self.textboxList.element;
 
 			self.initQuery();
+
+			// Only reattach element when autocomplete is needed.
+			self.element.detach();
 		},
 
 		initQuery: function() {
@@ -540,9 +546,13 @@ $.module('textboxlist/autocomplete', function(){
 
 		show: function() {
 
+			clearTimeout(self.sleep);
+			self.sleep = false;
+
 			var textboxList = self.textboxList.element;
 
 			self.element
+				.appendTo("body")
 				.show()
 				.css({
 					width: textboxList.outerWidth()
@@ -561,6 +571,11 @@ $.module('textboxlist/autocomplete', function(){
 			self.render.reset();
 
 			self.hidden = true;
+
+			// If no activity within 3000 seconds, detach myself.
+			self.sleep = setTimeout(function(){
+				self.element.detach();
+			}, 3000);
 		},
 
 		queries: {},
@@ -666,6 +681,9 @@ $.module('textboxlist/autocomplete', function(){
 
 		textFieldKeypress: function(textField, event, keyword) {
 
+			// Prevent autocomplete from falling asleep.
+			clearTimeout(self.sleep);
+
 			var onlyFromSuggestions = self.options.exclusive;
 
 			// If menu is not visible, stop.
@@ -760,6 +778,9 @@ $.module('textboxlist/autocomplete', function(){
 		},
 
 		textFieldKeyup: function(textField, event, keyword) {
+
+			// Prevent autocomplete from falling asleep.
+			clearTimeout(self.sleep);			
 
 			var onlyFromSuggestions = self.options.exclusive;
 
