@@ -422,6 +422,8 @@ $.module('textboxlist/autocomplete', function(){
 				menuItem: "textboxlist/menuItem"
 			},
 
+			cache: true,
+
 			minLength: 1,
 
 			limit: 10,
@@ -590,7 +592,7 @@ $.module('textboxlist/autocomplete', function(){
 				key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
 				query = self.queries[key];
 
-			var newQuery = !$.isDeferred(query),
+			var newQuery = !$.isDeferred(query) || !self.options.cache,
 
 				runQuery = function(){
 
