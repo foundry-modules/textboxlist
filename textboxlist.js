@@ -641,7 +641,7 @@ $.module('textboxlist/autocomplete', function(){
 
 			var menu = self.menu();
 
-			if (menu.data("keyword")!==keyword)
+			if (!self.options.cache || menu.data("keyword")!==keyword)
 			{
 				// Clear out menu items
 				menu.empty();
