@@ -477,9 +477,19 @@ $.module('textboxlist/autocomplete', function(){
 				textFieldKeyup: self.textFieldKeyup
 			});
 
-			self.textboxList.element.bind("destroyed", function(){
-				self.element.remove();
-			});			
+			self.textboxList.element
+				.bind("destroyed", function(){
+					self.element.remove();
+				});
+
+			self.textboxList.textField()
+				.bind("blur", function(event){
+
+					// Allow user to select menu first
+					setTimeout(function(){
+						self.hide();
+					}, 150);
+				});
 
 			// Set the position to be relative to the textboxList
 			self.options.position.of = self.textboxList.element;
