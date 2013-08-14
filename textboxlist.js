@@ -477,6 +477,10 @@ $.module('textboxlist/autocomplete', function(){
 				textFieldKeyup: self.textFieldKeyup
 			});
 
+			self.textboxList.element.bind("destroyed", function(){
+				self.element.remove();
+			});			
+
 			// Set the position to be relative to the textboxList
 			self.options.position.of = self.textboxList.element;
 
@@ -879,11 +883,7 @@ $.module('textboxlist/autocomplete', function(){
 		"{menuItem} mouseout": function(menuItem) {
 
 			self.menuItem().removeClass("active");
-		},
-
-		"{textboxlist} destroyed": function() {
-			self.element.remove();
-		}		
+		}
 	}}
 	);
 
