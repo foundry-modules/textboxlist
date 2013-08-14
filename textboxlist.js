@@ -879,7 +879,11 @@ $.module('textboxlist/autocomplete', function(){
 		"{menuItem} mouseout": function(menuItem) {
 
 			self.menuItem().removeClass("active");
-		}
+		},
+
+		"{textboxlist} destroyed": function() {
+			self.element.remove();
+		}		
 	}}
 	);
 
