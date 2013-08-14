@@ -810,7 +810,8 @@ $.module('textboxlist/autocomplete', function(){
 					break;
 			}
 
-			return (onlyFromSuggestions) ? null : keyword;
+			// Return empty string to allow backspace removal.
+			return (onlyFromSuggestions) ? ((keyword==="") ? "" : null) : keyword;
 		},
 
 		"{menuItem} click": function(menuItem) {
