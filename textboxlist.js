@@ -546,22 +546,51 @@ $.module('textboxlist/autocomplete', function(){
 			}
 		},
 
+		setLayout: function() {
+
+			if (!self.hidden) {
+
+				self.element
+					.css({
+						opacity: 1,
+						width: self.textboxList.element.outerWidth()
+					})
+					.position(self.options.position);
+			}
+		},
+
+		"{window} resize": function() {
+			self.element.css("opacity", 0);
+			self.setLayout();
+		},
+
+		"{window} scroll": function() {
+			self.element.css("opacity", 0);
+			self.setLayout();
+		},
+
+		"{window} dialogTransitionStart": function() {
+			self.hidden = true;
+			self.element.css("opacity", 0);
+		},
+
+		"{window} dialogTransitionEnd": function() {
+			self.hidden = false;
+			self.setLayout();
+		},
+
 		show: function() {
 
 			clearTimeout(self.sleep);
 			self.sleep = false;
 
-			var textboxList = self.textboxList.element;
-
 			self.element
 				.appendTo("body")
-				.show()
-				.css({
-					width: textboxList.outerWidth()
-				})
-				.position(self.options.position);
+				.show();
 
 			self.hidden = false;
+
+			self.setLayout();
 		},
 
 		hide: function() {
