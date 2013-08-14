@@ -721,6 +721,9 @@ $.module('textboxlist/autocomplete', function(){
 						activeMenuItem.prev(self.menuItem.selector)
 							.addClass("active");
 					}
+
+					// Prevent up/down keys from changing textfield cursor position.
+					event.preventDefault();
 					break;
 
 				// If down key is pressed
@@ -742,6 +745,9 @@ $.module('textboxlist/autocomplete', function(){
 						activeMenuItem.next(self.menuItem.selector)
 							.addClass("active");
 					}
+
+					// Prevent up/down keys from changing textfield cursor position.
+					event.preventDefault();					
 					break;
 
 				// If enter is pressed
