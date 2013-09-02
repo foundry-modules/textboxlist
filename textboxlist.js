@@ -16,12 +16,12 @@ var KEYCODE = {
 
 // Templates
 $.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
-$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
-$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="items" value="[%= id %]"/>');
+$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%= name %][]" value="[%= id %]"/>');
 
 $.Controller("TextboxList",
 	{
 		pluginName: "textboxlist",
+		hostname: "textboxlist"
 
 		defaultOptions: {
 
@@ -33,6 +33,7 @@ $.Controller("TextboxList",
 			plugin: {},
 
 			// Options
+			name: "",
 			unique: true,
 			caseSensitive: false,
 			max: null,
@@ -44,9 +45,7 @@ $.Controller("TextboxList",
 			"{itemContent}"     : "[data-textboxlist-itemContent]",
 			"{itemRemoveButton}": "[data-textboxlist-itemRemoveButton]",
 			"{textField}"       : "[data-textboxlist-textField]"
-		},
-
-		hostname: "textboxList"
+		}
 	},
 	function(self) {
 
@@ -61,6 +60,11 @@ $.Controller("TextboxList",
 
 			// Keep the original placeholder text value
 			textField.data("placeholderText", textField.attr("placeholder"));
+
+			// Configurable name option
+			if (!self.options.name) {
+				self.options.name = textField.data("textboxlistName") || "items"
+			}
 
 			// Go through existing item
 			// and reconstruct item data.
@@ -147,10 +151,15 @@ $.Controller("TextboxList",
 
 						// Or create a new one
 						(function(){
-							var item = {id: $.uid("item-"), title: title, key: self.getItemKey(title)};
+							var item = {id: $.uid("item-"), title: title, name: "items", key: self.getItemKey(title)};
 							newItem = true;
 							return item;
 						})();
+			}
+
+			// This is for the name attribute for the hidden input
+			if (item.name===undefined) {
+				item.name = self.options.name;
 			}
 
 			// If item content is not created, then make one.
@@ -468,21 +477,21 @@ $.module('textboxlist/autocomplete', function(){
 				return;
 			}
 
-			self.textboxList.autocomplete = self;
-			self.textboxList.pluginInstances["autocomplete"] = self;
+			self.textboxlist.autocomplete = self;
+			self.textboxlist.pluginInstances["autocomplete"] = self;
 
 			// Bind to the keyup event
-			self.textboxList.update({
+			self.textboxlist.update({
 				textFieldKeypress: self.textFieldKeypress,
 				textFieldKeyup: self.textFieldKeyup
 			});
 
-			self.textboxList.element
+			self.textboxlist.element
 				.bind("destroyed", function(){
 					self.element.remove();
 				});
 
-			self.textboxList.textField()
+			self.textboxlist.textField()
 				.bind("blur", function(event){
 
 					// Allow user to select menu first
@@ -491,8 +500,8 @@ $.module('textboxlist/autocomplete', function(){
 					}, 150);
 				});
 
-			// Set the position to be relative to the textboxList
-			self.options.position.of = self.textboxList.element;
+			// Set the position to be relative to the textboxlist
+			self.options.position.of = self.textboxlist.element;
 
 			self.initQuery();
 
@@ -503,7 +512,7 @@ $.module('textboxlist/autocomplete', function(){
 		initQuery: function() {
 
 			// Determine query method
-			var query = self.options.query || self.textboxList.element.data("query");
+			var query = self.options.query || self.textboxlist.element.data("query");
 
 			// TODO: Wrap up query options and pass to query URL & query function.
 
@@ -567,7 +576,7 @@ $.module('textboxlist/autocomplete', function(){
 				self.element
 					.css({
 						opacity: 1,
-						width: self.textboxList.element.outerWidth()
+						width: self.textboxlist.element.outerWidth()
 					})
 					.position(self.options.position);
 			}
@@ -870,10 +879,10 @@ $.module('textboxlist/autocomplete', function(){
 
 			// Add item
 			var item = menuItem.data("item");
-			self.textboxList.addItem(item);
+			self.textboxlist.addItem(item);
 
 			// Get text field & clear text field
-			var textField = self.textboxList.textField().val("");
+			var textField = self.textboxlist.textField().val("");
 
 			// Refocus text field
 			setTimeout(function(){
