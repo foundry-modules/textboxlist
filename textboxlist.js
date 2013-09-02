@@ -21,7 +21,8 @@ $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%
 $.Controller("TextboxList",
 	{
 		pluginName: "textboxlist",
-		hostname: "textboxlist"
+
+		hostname: "textboxlist",
 
 		defaultOptions: {
 
@@ -33,7 +34,7 @@ $.Controller("TextboxList",
 			plugin: {},
 
 			// Options
-			name: "",
+			name: null,
 			unique: true,
 			caseSensitive: false,
 			max: null,
@@ -47,9 +48,7 @@ $.Controller("TextboxList",
 			"{textField}"       : "[data-textboxlist-textField]"
 		}
 	},
-	function(self) {
-
-		return {
+	function(self) { return {
 
 		init: function() {
 
@@ -64,7 +63,7 @@ $.Controller("TextboxList",
 			// Configurable name option
 			if (!self.options.name) {
 				self.options.name = textField.data("textboxlistName") || "items"
-			}
+			}			
 
 			// Go through existing item
 			// and reconstruct item data.
@@ -134,11 +133,10 @@ $.Controller("TextboxList",
 				item = filterItem.call(self, item);
 			}
 
-			var items = self.itemsByTitle,
-				newItem = false;
+			var items = self.itemsByTitle;
 
 			// If item is a string,
-			if ($._.isString(item) && item!=="") {
+			if ($.isString(item) && item!=="") {
 
 				var title = item,
 					key = self.getItemKey(title);
@@ -149,39 +147,18 @@ $.Controller("TextboxList",
 						// Get existing item
 						self.itemsByTitle[key] :
 
-						// Or create a new one
-						(function(){
-							var item = {id: $.uid("item-"), title: title, name: "items", key: self.getItemKey(title)};
-							newItem = true;
-							return item;
-						})();
+						{
+							id   : $.uid("item-"),
+							title: title,
+							key  : self.getItemKey(title)
+						}
 			}
 
 			// This is for the name attribute for the hidden input
-			if (item.name===undefined) {
-				item.name = self.options.name;
-			}
+			item.name = item.name || self.options.name;
 
 			// If item content is not created, then make one.
-			if (item.html===undefined) {
-				item.html = self.view.itemContent(true, item);
-			}
-
-			// If items should be unique
-			if (options.unique &&
-
-				// and this item has already been added to the list
-				(self.items.hasOwnProperty(item.id) ||
-
-					// or item of the same title already exists
-					(newItem && items.hasOwnProperty[item.key])
-				)
-
-			   )
-			{
-				// Then don't create this item anymore
-				return null;
-			}
+			item.html = item.html || self.view.itemContent(true, item);
 
 			return item;
 		},
@@ -212,8 +189,8 @@ $.Controller("TextboxList",
 
 		addItem: function(item) {
 
-			// Don't add empty title
-			if (item==="") return;
+			// Don't add invalid item
+			if (!item) return;
 
 			var options = self.options;
 
@@ -227,12 +204,29 @@ $.Controller("TextboxList",
 			// At this point, if item if not an object, skip.
 			if (!$.isPlainObject(item)) return;
 
+			var itemEl,
+				existingItemEl = self.item().filterBy("id", item.id);
+
+			// If items should be unique,
+			// and this item has already been added to the list
+			if (options.unique && existingItemEl.length > 0) {				
+
+				// then use existing item.
+				itemEl = existingItemEl;
+			}
+
+			// Else create a new item
+			if (!itemEl) {
+
+				itemEl = 
+					self.view.item(item)
+						.attr("data-id", item.id);
+			}
+
 			self.createItem(item);
 
 			// Add item on to the list
-			self.view.item(item)
-				.attr("data-id", item.id)
-				.insertBefore(self.textField());
+			itemEl.insertBefore(self.textField());
 
 			self.trigger("addItem", [item]);
 
@@ -244,7 +238,7 @@ $.Controller("TextboxList",
 			var item = self.items[id];
 
 			// Remove item from the list
-			self.item("[data-id=" + id + "]")
+			self.item().filterBy("id", id)
 				.remove();
 
 			self.deleteItem(id);
@@ -300,10 +294,6 @@ $.Controller("TextboxList",
 			var keyCode = event.keyCode;
 
 			textField.data("realEnterKey", keyCode==KEYCODE.ENTER);
-
-			var textFieldKeydown = self.options.textFieldKeydown;
-
-			$.isFunction(textFieldKeydown) && textFieldKeydown.call(self, textField, event);
 		},
 
 		"{textField} keypress": function(textField, event)
@@ -317,19 +307,7 @@ $.Controller("TextboxList",
 
 			textField.data("realEnterKey", keydownIsEnter && keypressIsEnter);
 
-			var item = $.trim(self.textField().val());
-
-			// Trigger custom event
-			var textFieldKeypress = self.options.textFieldKeypress;
-
-			if ($.isFunction(textFieldKeypress)) {
-
-				item = textFieldKeypress.call(self, textField, event, item);
-			}
-
-			// If item was converted into a null object,
-			// this means the custom keyup event wants to "preventDefault".
-			if (item===undefined || item===null) return;
+			var keyword = $.trim(self.textField().val());
 
 			switch (event.keyCode) {
 
@@ -337,6 +315,19 @@ $.Controller("TextboxList",
 				case KEYCODE.ENTER:
 
 					if (textField.data("realEnterKey")) {
+
+						var event = self.trigger("useItem", [keyword]),
+							item = event.item;
+
+						// If event handler did not decorate item,
+						// use keyword as item.
+						if (item===undefined) {
+							item = keyword;
+						}
+
+						// If item was converted into a null/false object,
+						// this means the custom keyup event wants to "preventDefault".
+						if (item===false || item===null) return;
 
 						self.addItem(item);
 
@@ -350,18 +341,6 @@ $.Controller("TextboxList",
 		"{textField} keyup": function(textField, event)
 		{
 			var item = $.trim(self.textField().val());
-
-			// Trigger custom event if exists
-			var textFieldKeyup = self.options.textFieldKeyup;
-
-			if ($.isFunction(textFieldKeyup)) {
-
-				item = textFieldKeyup.call(self, textField, event, item);
-			}
-
-			// If item was converted into a null object,
-			// this means the custom keyup event wants to "preventDefault".
-			if (item===undefined || item===null) return;
 
 			// Optimization for compiler
 			var canRemoveItemUsingBackspace = "canRemoveItemUsingBackspace";
@@ -479,12 +458,6 @@ $.module('textboxlist/autocomplete', function(){
 
 			self.textboxlist.autocomplete = self;
 			self.textboxlist.pluginInstances["autocomplete"] = self;
-
-			// Bind to the keyup event
-			self.textboxlist.update({
-				textFieldKeypress: self.textFieldKeypress,
-				textFieldKeyup: self.textFieldKeyup
-			});
 
 			self.textboxlist.element
 				.bind("destroyed", function(){
@@ -605,7 +578,6 @@ $.module('textboxlist/autocomplete', function(){
 		show: function() {
 
 			clearTimeout(self.sleep);
-			self.sleep = false;
 
 			self.element
 				.appendTo("body")
@@ -625,6 +597,9 @@ $.module('textboxlist/autocomplete', function(){
 			self.render.reset();
 
 			self.hidden = true;
+
+			// Clear any previous sleep timer first
+			clearTimeout(self.sleep);
 
 			// If no activity within 3000 seconds, detach myself.
 			self.sleep = setTimeout(function(){
@@ -716,41 +691,30 @@ $.module('textboxlist/autocomplete', function(){
 						.appendTo(menu);
 				});
 
+				// If we only allow adding item from suggestions
+				if (self.options.exclusive) {
+
+					// Automatically select the first item
+					self.menuItem(":first").addClass("active");
+				}
+
 				menu.data("keyword", keyword);
 			}
 
 			self.show();
 		}),
 
-		getActiveMenuItem: function() {
-
-			var activeMenuItem = self.menuItem(".active");
-
-			if (activeMenuItem.length < 1) {
-				activeMenuItem = undefined;
-			}
-
-			return activeMenuItem;
-		},
-
-		textFieldKeypress: function(textField, event, keyword) {
+		"{textboxlist.textField} keydown": function(textField, event) {
 
 			// Prevent autocomplete from falling asleep.
 			clearTimeout(self.sleep);
 
-			var onlyFromSuggestions = self.options.exclusive;
-
-			// If menu is not visible, stop.
-			if (self.hidden) {
-
-				// If we only accept suggested items,
-				// don't let textboxlist add the keyword
-				// by returning null.
-				return (onlyFromSuggestions) ? null : keyword;
-			}
-
 			// Get active menu item
-			var activeMenuItem = self.getActiveMenuItem();
+			var activeMenuItem = self.menuItem(".active");
+
+			if (activeMenuItem.length < 1) {
+				activeMenuItem = false;
+			}
 
 			switch (event.keyCode) {
 
@@ -802,74 +766,62 @@ $.module('textboxlist/autocomplete', function(){
 					event.preventDefault();					
 					break;
 
-				// If enter is pressed
-				case KEYCODE.ENTER:
-
-					// Get activated item.
-					var activeMenuItem = self.getActiveMenuItem();
-
-					// Hide the menu
-					self.hide();
-
-					// If there is an activated item,
-					if (activeMenuItem) {
-
-						// get the item data,
-						var item = activeMenuItem.data("item");
-
-						// and return the item data to the textboxlist.
-						return item;
-
-					} else if (onlyFromSuggestions) {
-
-						return null;
-					}
-					break;
-
 				// If escape is pressed,
 				case KEYCODE.ESCAPE:
 
 					// hide menu.
 					self.hide();
 					break;
-			}
-
-			return (onlyFromSuggestions) ? null : keyword;
-		},
-
-		textFieldKeyup: function(textField, event, keyword) {
-
-			// Prevent autocomplete from falling asleep.
-			clearTimeout(self.sleep);			
-
-			var onlyFromSuggestions = self.options.exclusive;
-
-			switch (event.keyCode) {
-
-				case KEYCODE.UP:
-				case KEYCODE.DOWN:
-				case KEYCODE.ENTER:
-				case KEYCODE.ESCAPE:
-					// Don't repopulate if these keys were pressed.
-					break;
 
 				default:
 
-					// If no keyword given or keyword doesn't meet minimum query length, stop.
-					if (keyword==="" || (keyword.length < self.options.minLength)) {
+					clearTimeout(self.populateTask);
 
-						self.hide();
+					self.populateTask = setTimeout(function(){
 
-					// Else populate suggestions.
-					} else {
+						var keyword = $.trim(self.textboxlist.textField().val());
 
-						self.populate(keyword);
-					}
+						// If no keyword given or keyword doesn't meet minimum query length, stop.
+						if (keyword==="" || (keyword.length < self.options.minLength)) {
+
+							self.hide();
+
+						// Else populate suggestions.
+						} else {
+
+							self.populate(keyword);
+						}
+					}, 1);
 					break;
 			}
+		},
 
-			// Return empty string to allow backspace removal.
-			return (onlyFromSuggestions) ? ((keyword==="") ? "" : null) : keyword;
+		"{textboxlist} useItem": function(textField, event, keyword) {
+
+			// If we only pick items exclusively from menu,
+			// set item to false first. This prevents any
+			// random keyword from being added to the list.
+			if (self.options.exclusive) {
+				event.item = false;
+			}			
+
+			// If menu is not visible, stop.
+			if (self.hidden) return;
+
+			// If there are activated items
+			var activeMenuItem = self.menuItem(".active");
+
+			if (activeMenuItem.length > 0) {
+
+				// get the item data,
+				var item = activeMenuItem.data("item");
+
+				// and return the item data to the textboxlist.
+				event.item = item;
+			}
+
+			// Hide the menu
+			self.hide();
 		},
 
 		"{menuItem} click": function(menuItem) {
