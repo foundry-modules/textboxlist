@@ -21,8 +21,7 @@ $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%
 $.Controller("TextboxList",
 	{
 		pluginName: "textboxlist",
-
-		hostname: "textboxlist",
+		hostname: "textboxlist"
 
 		defaultOptions: {
 
@@ -592,7 +591,17 @@ $.module('textboxlist/autocomplete', function(){
 
 			self.element.hide();
 
-			self.menuItem().removeClass("active");
+			var menuItem = self.menuItem(),
+				activeMenuItem = menuItem.filter(".active");
+
+			if (activeMenuItem.length > 0) {
+				self.lastItem = {
+					keyword: $.trim(self.textboxlist.textField().val()),
+					item   : activeMenuItem.data("item")
+				};
+			}
+
+			menuItem.removeClass("active");
 
 			self.render.reset();
 
@@ -691,15 +700,15 @@ $.module('textboxlist/autocomplete', function(){
 						.appendTo(menu);
 				});
 
-				// If we only allow adding item from suggestions
-				if (self.options.exclusive) {
-
-					// Automatically select the first item
-					self.menuItem(":first").addClass("active");
-				}
-
 				menu.data("keyword", keyword);
 			}
+
+			// If we only allow adding item from suggestions
+			if (self.options.exclusive) {
+
+				// Automatically select the first item
+				self.menuItem(":first").addClass("active");
+			}			
 
 			self.show();
 		}),
@@ -773,6 +782,10 @@ $.module('textboxlist/autocomplete', function(){
 					self.hide();
 					break;
 
+				// Don't do anything when enter is pressed.
+				case KEYCODE.ENTER:
+					break;
+
 				default:
 
 					clearTimeout(self.populateTask);
@@ -801,12 +814,27 @@ $.module('textboxlist/autocomplete', function(){
 			// If we only pick items exclusively from menu,
 			// set item to false first. This prevents any
 			// random keyword from being added to the list.
-			if (self.options.exclusive) {
-				event.item = false;
-			}			
+			var exclusive = self.options.exclusive;
 
-			// If menu is not visible, stop.
-			if (self.hidden) return;
+			if (exclusive) event.item = false;
+
+			// If menu is not visible
+			if (self.hidden) {
+
+				// and we are in exclusive mode
+				// and the last item before we hide the menu
+				// matches the current keyword, 
+				var lastItem = self.lastItem;
+
+				if (exclusive && lastItem && lastItem.keyword==keyword) {
+
+					// then we will automatically use the last
+					// item as the item to be added to the list.					
+					event.item = lastItem.item;
+				}
+
+				return;
+			}
 
 			// If there are activated items
 			var activeMenuItem = self.menuItem(".active");
