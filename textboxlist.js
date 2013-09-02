@@ -21,7 +21,7 @@ $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%
 $.Controller("TextboxList",
 	{
 		pluginName: "textboxlist",
-		hostname: "textboxlist"
+		hostname: "textboxlist",
 
 		defaultOptions: {
 
