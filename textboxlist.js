@@ -813,9 +813,9 @@ function(self) { return {
 		// select textfield as a visual indication, else
 		// unselect textfield and let the menu item appear selected.
 		if (activeMenuItem.length < 1) {
-			textfield.selectAll(); return;
+			textField.selectAll(); return;
 		} else {
-			textfield.unselect();
+			textField.unselect();
 		}
 
 		// Scroll menu viewport if it is out of visible area.
