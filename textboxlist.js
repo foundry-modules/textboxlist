@@ -721,6 +721,8 @@ function(self) { return {
 			activeMenuItem = false;
 		}
 
+		var textField = self.textboxlist.textField();		
+
 		switch (event.keyCode) {
 
 			// If up key is pressed
@@ -788,7 +790,7 @@ function(self) { return {
 
 				self.populateTask = setTimeout(function(){
 
-					var keyword = $.trim(self.textboxlist.textField().val());
+					var keyword = $.trim(textField.val());
 
 					// If no keyword given or keyword doesn't meet minimum query length, stop.
 					if (keyword==="" || (keyword.length < self.options.minLength)) {
@@ -803,6 +805,21 @@ function(self) { return {
 				}, 1);
 				break;
 		}
+
+		// Get newly activated item
+		var activeMenuItem = self.menuItem(".active");
+
+		// If we are reaching the end of the menu cycle,
+		// select textfield as a visual indication, else
+		// unselect textfield and let the menu item appear selected.
+		if (activeMenuItem.length < 1) {
+			textfield.selectAll(); return;
+		} else {
+			textfield.unselect();
+		}
+
+		// Scroll menu viewport if it is out of visible area.
+		self.viewport().scrollIntoView(activeMenuItem);		
 	},
 
 	"{textboxlist} useItem": function(textField, event, keyword) {
