@@ -550,15 +550,15 @@ function(self) { return {
 		}
 	},
 
-	"{window} resize": function() {
+	"{window} resize": $.debounce(function() {
 		self.element.css("opacity", 0);
 		self.setLayout();
-	},
+	}, 250),
 
-	"{window} scroll": function() {
+	"{window} scroll": $.debounce(function() {
 		self.element.css("opacity", 0);
 		self.setLayout();
-	},
+	}, 250),
 
 	"{window} dialogTransitionStart": function() {
 		self.hidden = true;
