@@ -393,7 +393,7 @@ $(document)
 // Textboxlist ends
 
 // Autocomplete starts
-$.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner"><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
+$.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
 $.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
 
 $.Controller("TextboxList.Autocomplete",
@@ -430,7 +430,8 @@ $.Controller("TextboxList.Autocomplete",
 		filterItem: null,
 
 		"{menu}": "[data-textboxlist-menu]",
-		"{menuItem}": "[data-textboxlist-menuItem]"
+		"{menuItem}": "[data-textboxlist-menuItem]",
+		"{viewport}": "[data-textboxlist-autocomplete-viewport]"
 	}
 },
 function(self) { return {
