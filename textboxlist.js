@@ -18,7 +18,7 @@ var KEYCODE = {
 $.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%= name %][]" value="[%= id %]"/>');
 
-$.Controller("TextboxList",
+$.Controller("Textboxlist",
 	{
 		pluginName: "textboxlist",
 		hostname: "textboxlist",
