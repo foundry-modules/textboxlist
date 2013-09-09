@@ -396,7 +396,7 @@ $(document)
 $.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
 $.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
 
-$.Controller("TextboxList.Autocomplete",
+$.Controller("Textboxlist.Autocomplete",
 {
 	defaultOptions: {
 
