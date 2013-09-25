@@ -16,7 +16,7 @@ var KEYCODE = {
 
 // Templates
 $.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
-$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%= name %][]" value="[%= id %]"/>');
+$.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%= name %]" value="[%= id %]"/>');
 
 $.Controller("Textboxlist",
 	{
@@ -33,7 +33,7 @@ $.Controller("Textboxlist",
 			plugin: {},
 
 			// Options
-			name: null,
+			name: "items[]",
 			unique: true,
 			caseSensitive: false,
 			max: null,
@@ -59,10 +59,11 @@ $.Controller("Textboxlist",
 			// Keep the original placeholder text value
 			textField.data("placeholderText", textField.attr("placeholder"));
 
-			// Configurable name option
-			if (!self.options.name) {
-				self.options.name = textField.data("textboxlistName") || "items"
-			}			
+			// Data attribute override options
+			var name = textField.data("textboxlistName");
+			if (name) {
+				self.options.name = name;
+			}
 
 			// Go through existing item
 			// and reconstruct item data.
