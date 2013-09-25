@@ -428,7 +428,7 @@ $(document)
 // Textboxlist ends
 
 // Autocomplete starts
-$.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
+$.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><div class="textboxlist-autocomplete-loading" data-textboxlist-autocomplete-loading></div><div class="textboxlist-autocomplete-empty" data-textboxlist-autocomplete-empty></div><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
 $.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
 
 $.Controller("Textboxlist.Autocomplete",
@@ -466,7 +466,9 @@ $.Controller("Textboxlist.Autocomplete",
 
 		"{menu}": "[data-textboxlist-menu]",
 		"{menuItem}": "[data-textboxlist-menuItem]",
-		"{viewport}": "[data-textboxlist-autocomplete-viewport]"
+		"{viewport}": "[data-textboxlist-autocomplete-viewport]",
+		"{loadingHint}": "[data-textboxlist-autocomplete-loading]",
+		"{emptyHint}": "[data-textboxlist-autocomplete-empty]"
 	}
 },
 function(self) { return {
@@ -644,6 +646,15 @@ function(self) { return {
 
 		self.populated = false;
 
+		// Remove loading class
+		var element = self.element;
+			element.removeClass("loading");
+
+		// Trigger populate event
+		// If the populate event returns a modified keyword, use it.
+		var event = self.trigger("populateKeyword", [keyword]);
+		if (event.keyword) { keyword = event.keyword };
+
 		var options = self.options,
 			key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
 			query = self.queries[key];
@@ -651,6 +662,8 @@ function(self) { return {
 		var newQuery = !$.isDeferred(query) || !self.options.cache,
 
 			runQuery = function(){
+
+				element.addClass("loading");
 
 				// Query the keyword if:
 				// - The query hasn't been made.
@@ -669,7 +682,14 @@ function(self) { return {
 					)
 					.fail(function(){
 						self.hide();
+					})
+					.always(function(){
+
+						element.removeClass("loading");
 					});
+
+				// Trigger query event
+				self.trigger("queryKeyword", [query, keyword]);					
 			}
 
 		// If this is a new query
@@ -719,6 +739,14 @@ function(self) { return {
 			return;
 		}
 
+		// Get textboxlist
+		var textboxlist = self.textboxlist,
+			autocomplete = self,
+			element = self.element;
+
+		// Remove empty class
+		element.removeClass("empty");
+
 		var menu = self.menu();
 
 		if (!self.options.cache || menu.data("keyword")!==keyword) {
@@ -728,14 +756,17 @@ function(self) { return {
 
 			$.each(items, function(i, item){
 
-				var filterItem = self.options.filterItem;
+				textboxlist.trigger("filterItem", [item, autocomplete, textboxlist]);
 
+				// Deprecated
+				var filterItem = self.options.filterItem;
 				if ($.isFunction(filterItem)) {
 					item = filterItem.call(self, item, keyword);
-				}
+				}	
 
-				// If the item is not an object, stop.
-				if (!$.isPlainObject(item)) return;
+				// If the item is not an object,
+				// or item should be discarded, stop.
+				if (!$.isPlainObject(item) || item.discard) return;
 
 				var html = item.menuHtml || item.title;
 
@@ -747,11 +778,11 @@ function(self) { return {
 			menu.data("keyword", keyword);
 		}
 
-		var filterMenu = self.options.filterMenu
+		// Get menu Items
+		var menuItems = self.menuItem();
 
-		if ($.isFunction(filterMenu)) {
-			filterMenu.call(self, menu, self.menuItem());
-		}
+		// Trigger filterMenu event
+		textboxlist.trigger("filterMenu", [menu, menuItems, autocomplete, textboxlist]);
 
 		// If we only allow adding item from suggestions
 		if (self.options.exclusive) {
@@ -759,6 +790,15 @@ function(self) { return {
 			// Automatically select the first item
 			self.menuItem(":not(.hidden):first").addClass("active");
 		}
+
+		// If menu is empty, toggle empty classname
+		if (menuItems.filter(":not(.hidden)").length < 1) {
+
+			element.addClass("empty");
+		}
+
+		// Trigger renderMenu event
+		textboxlist.trigger("renderMenu", [menu, autocomplete, textboxlist]);
 
 		self.show();
 	}),
