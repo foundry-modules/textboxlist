@@ -430,6 +430,8 @@ $(document)
 // Autocomplete starts
 $.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><div class="textboxlist-autocomplete-loading" data-textboxlist-autocomplete-loading></div><div class="textboxlist-autocomplete-empty" data-textboxlist-autocomplete-empty></div><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
 $.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
+$.template("textboxlist/loadingHint", '<i class="textboxlist-autocomplete-loading-indicator"></i>');
+$.template("textboxlist/emptyHint", '<span class="textboxlist-autocomplete-empty-text">No items found.</span>');
 
 $.Controller("Textboxlist.Autocomplete",
 {
@@ -437,7 +439,9 @@ $.Controller("Textboxlist.Autocomplete",
 
 		view: {
 			menu: "textboxlist/menu",
-			menuItem: "textboxlist/menuItem"
+			menuItem: "textboxlist/menuItem",
+			loadingHint: "textboxlist/loadingHint",
+			emptyHint: "textboxlist/emptyHint"
 		},
 
 		cache: true,
@@ -502,6 +506,14 @@ function(self) { return {
 		self.options.position.of = self.textboxlist.element;
 
 		self.initQuery();
+
+		// Loading hint
+		self.view.loadingHint()
+			.appendTo(self.loadingHint());
+
+		// Empty hint
+		self.view.emptyHint()
+			.appendTo(self.emptyHint());
 
 		// Only reattach element when autocomplete is needed.
 		self.element.detach();
@@ -651,23 +663,34 @@ function(self) { return {
 		self.populated = false;
 
 		// Remove loading class
-		var element = self.element;
-			element.removeClass("loading");
+		var element = self.element,
+			options = self.options;
+
+		// Remove both loading & empty class
+		element.removeClass("loading empty");
+
+		if (options.showLoadingHint) {
+			self.hide();
+		}
 
 		// Trigger populate event
 		// If the populate event returns a modified keyword, use it.
 		var event = self.trigger("populateKeyword", [keyword]);
 		if (event.keyword) { keyword = event.keyword };
 
-		var options = self.options,
-			key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
+		
+		var key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
 			query = self.queries[key];
 
 		var newQuery = !$.isDeferred(query) || !self.options.cache,
 
 			runQuery = function(){
 
-				element.addClass("loading");
+				// Show loading hint
+				if (options.showLoadingHint) {
+					element.addClass("loading");
+					self.show();
+				}
 
 				// Query the keyword if:
 				// - The query hasn't been made.
@@ -688,7 +711,6 @@ function(self) { return {
 						self.hide();
 					})
 					.always(function(){
-
 						element.removeClass("loading");
 					});
 
@@ -754,7 +776,7 @@ function(self) { return {
 
 				// Clear out menu
 				menu.empty();
-				
+
 				// Add empty class
 				element.addClass("empty");
 
