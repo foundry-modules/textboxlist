@@ -267,10 +267,6 @@ $.Controller("Textboxlist",
 			return addedItems;
 		},
 
-		"click": function() {
-			self.textField().focus();
-		},
-
 		"{self} addItem": function() {
 
 			self.setLayout();
@@ -379,6 +375,44 @@ $.Controller("Textboxlist",
 					self[canRemoveItemUsingBackspace] = false;
 					break;
 			}
+		},
+
+		"{self} click": function(el, event) {
+			
+			var textField = self.textField();
+
+			if (!textField.is(event.target)) {
+				textField.focus();
+			}
+		},
+
+		"{textField} focusin": function() {
+
+			if (self.activated) return;
+
+			self.activated = true;
+			self.trigger("activate");
+		},
+
+		"{self} mousedown": function() {
+			self.focusing = true;
+		},
+
+		"{self} mouseup": function() {
+			self.focusing = false;
+		},
+
+		"{self} focusout": function() {
+
+			if (self.focusing) return;
+
+			self.activated = false;
+
+			self.deactivateTimer =
+				setTimeout(function(){
+					if (self.activated) return;
+					self.trigger("deactivate");
+				}, 1);
 		}
 	}}
 );
@@ -452,22 +486,10 @@ function(self) { return {
 			return;
 		}
 
-		self.textboxlist.autocomplete = self;
-		self.textboxlist.pluginInstances["autocomplete"] = self;
+		var textboxlist = self.textboxlist;
 
-		self.textboxlist.element
-			.bind("destroyed", function(){
-				self.element.remove();
-			});
-
-		self.textboxlist.textField()
-			.bind("blur", function(event){
-
-				// Allow user to select menu first
-				setTimeout(function(){
-					self.hide();
-				}, 150);
-			});
+		textboxlist.autocomplete = self;
+		textboxlist.pluginInstances["autocomplete"] = self;
 
 		// Set the position to be relative to the textboxlist
 		self.options.position.of = self.textboxlist.element;
@@ -662,6 +684,30 @@ function(self) { return {
 		}
 	},
 
+	populateTask: null,
+
+	populateFromTextField: function() {
+
+		clearTimeout(self.populateTask);
+
+		self.populateTask = setTimeout(function(){
+
+			var textField = self.textboxlist.textField(),
+				keyword = $.trim(textField.val());
+
+			// If no keyword given or keyword doesn't meet minimum query length, stop.
+			if (keyword==="" || (keyword.length < self.options.minLength)) {
+
+				self.hide();
+
+			// Else populate suggestions.
+			} else {
+
+				self.populate(keyword);
+			}
+		}, 1);
+	},
+
 	render: $.Enqueue(function(items, keyword){
 
 		if (!$.isArray(items)) return;
@@ -786,24 +832,7 @@ function(self) { return {
 				break;
 
 			default:
-
-				clearTimeout(self.populateTask);
-
-				self.populateTask = setTimeout(function(){
-
-					var keyword = $.trim(textField.val());
-
-					// If no keyword given or keyword doesn't meet minimum query length, stop.
-					if (keyword==="" || (keyword.length < self.options.minLength)) {
-
-						self.hide();
-
-					// Else populate suggestions.
-					} else {
-
-						self.populate(keyword);
-					}
-				}, 1);
+				self.populateFromTextField();
 				break;
 		}
 
@@ -822,6 +851,24 @@ function(self) { return {
 
 		// Scroll menu viewport if it is out of visible area.
 		self.viewport().scrollIntoView(activeMenuItem);		
+	},
+
+	"{textboxlist} activate": function(textboxlist) {
+
+		self.populateFromTextField();
+	},
+
+	"{textboxlist} deactivate": function(textboxlist) {
+
+		// Allow user to select menu first
+		setTimeout(function(){
+			self.hide();
+		}, 150);
+	},
+
+	"{textboxlist} destroyed": function() {
+
+		self.element.remove();
 	},
 
 	"{textboxlist} useItem": function(textField, event, keyword) {
