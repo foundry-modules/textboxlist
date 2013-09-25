@@ -464,6 +464,10 @@ $.Controller("Textboxlist.Autocomplete",
 
 		filterItem: null,
 
+		showEmptyHint: false,
+
+		showLoadingHint: false,
+
 		"{menu}": "[data-textboxlist-menu]",
 		"{menuItem}": "[data-textboxlist-menuItem]",
 		"{viewport}": "[data-textboxlist-autocomplete-viewport]",
@@ -742,14 +746,15 @@ function(self) { return {
 		// Get textboxlist
 		var textboxlist = self.textboxlist,
 			autocomplete = self,
-			element = self.element;
+			element = self.element,
+			options = self.options;
 
 		// Remove empty class
 		element.removeClass("empty");
 
 		var menu = self.menu();
 
-		if (!self.options.cache || menu.data("keyword")!==keyword) {
+		if (!options.cache || menu.data("keyword")!==keyword) {
 
 			// Clear out menu items
 			menu.empty();
@@ -759,7 +764,7 @@ function(self) { return {
 				textboxlist.trigger("filterItem", [item, autocomplete, textboxlist]);
 
 				// Deprecated
-				var filterItem = self.options.filterItem;
+				var filterItem = options.filterItem;
 				if ($.isFunction(filterItem)) {
 					item = filterItem.call(self, item, keyword);
 				}	
@@ -784,19 +789,26 @@ function(self) { return {
 		// Trigger filterMenu event
 		textboxlist.trigger("filterMenu", [menu, menuItems, autocomplete, textboxlist]);
 
-		// If we only allow adding item from suggestions
-		if (self.options.exclusive) {
-
-			// Automatically select the first item
-			self.menuItem(":not(.hidden):first").addClass("active");
-		}
-
 		// If menu is empty, toggle empty classname
 		if (menuItems.filter(":not(.hidden)").length < 1) {
 
 			element.addClass("empty");
+
+			// If we shouldn't show an empty hint
+			if (!options.showEmptyHint) {
+
+				// Hide menu straightaway
+				return self.hide();
+			}
 		}
 
+		// If we only allow adding item from suggestions
+		if (options.exclusive) {
+
+			// Automatically select the first item
+			self.menuItem(":not(.hidden):first").addClass("active");
+		}
+		
 		// Trigger renderMenu event
 		textboxlist.trigger("renderMenu", [menu, autocomplete, textboxlist]);
 
