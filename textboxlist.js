@@ -735,25 +735,48 @@ function(self) { return {
 
 	render: $.Enqueue(function(items, keyword){
 
-		if (!$.isArray(items)) return;
-
-		// If there are no items, hide menu.
-		if (items.length < 1) {
-			self.hide();
-			return;
-		}
+		// If items passed in isn't an array,
+		// fake an empty array.
+		if (!$.isArray(items)) { items = [] };
 
 		// Get textboxlist
 		var textboxlist = self.textboxlist,
 			autocomplete = self,
 			element = self.element,
-			options = self.options;
+			options = self.options,
+			menu = self.menu();		
+
+		// If there are no items, hide menu.
+		if (items.length < 1) {
+
+			// If we are supposed to show an empty hint
+			if (options.showEmptyHint) {
+
+				// Clear out menu
+				menu.empty();
+				
+				// Add empty class
+				element.addClass("empty");
+
+				// Trigger renderMenu event
+				textboxlist.trigger("renderMenu", [menu, autocomplete, textboxlist]);
+
+				// Show menu
+				self.show();
+
+			// Just hide straight away
+			} else {
+
+				self.hide();
+			}
+
+			return;
+		}
 
 		// Remove empty class
 		element.removeClass("empty");
 
-		var menu = self.menu();
-
+		// Generate menu items
 		if (!options.cache || menu.data("keyword")!==keyword) {
 
 			// Clear out menu items
@@ -808,7 +831,7 @@ function(self) { return {
 			// Automatically select the first item
 			self.menuItem(":not(.hidden):first").addClass("active");
 		}
-		
+
 		// Trigger renderMenu event
 		textboxlist.trigger("renderMenu", [menu, autocomplete, textboxlist]);
 
