@@ -721,8 +721,8 @@ function(self) { return {
 
 		var menu = self.menu();
 
-		if (!self.options.cache || menu.data("keyword")!==keyword)
-		{
+		if (!self.options.cache || menu.data("keyword")!==keyword) {
+
 			// Clear out menu items
 			menu.empty();
 
@@ -747,12 +747,18 @@ function(self) { return {
 			menu.data("keyword", keyword);
 		}
 
+		var filterMenu = self.options.filterMenu
+
+		if ($.isFunction(filterMenu)) {
+			filterMenu.call(self, menu, self.menuItem());
+		}
+
 		// If we only allow adding item from suggestions
 		if (self.options.exclusive) {
 
 			// Automatically select the first item
-			self.menuItem(":first").addClass("active");
-		}			
+			self.menuItem(":not(.hidden):first").addClass("active");
+		}
 
 		self.show();
 	}),
@@ -763,7 +769,7 @@ function(self) { return {
 		clearTimeout(self.sleep);
 
 		// Get active menu item
-		var activeMenuItem = self.menuItem(".active");
+		var activeMenuItem = self.menuItem(".active:not(.hidden)");
 
 		if (activeMenuItem.length < 1) {
 			activeMenuItem = false;
@@ -783,13 +789,13 @@ function(self) { return {
 				if (!activeMenuItem) {
 
 					// activate the last one.
-					self.menuItem(":last").addClass("active");
+					self.menuItem(":not(.hidden):last").addClass("active");
 
 				// Else find the menu item before it,
 				} else {
 
 					// and activate it.
-					activeMenuItem.prev(self.menuItem.selector)
+					activeMenuItem.prev(self.menuItem.selector + ':not(.hidden)')
 						.addClass("active");
 				}
 
@@ -807,13 +813,13 @@ function(self) { return {
 				if (!activeMenuItem) {
 
 					// activate the first one.
-					self.menuItem(":first").addClass("active");
+					self.menuItem(":not(.hidden):first").addClass("active");
 
 				// Else find the menu item after it,
 				} else {
 
 					// and activate it.
-					activeMenuItem.next(self.menuItem.selector)
+					activeMenuItem.next(self.menuItem.selector + ':not(.hidden)')
 						.addClass("active");
 				}
 
@@ -838,7 +844,7 @@ function(self) { return {
 		}
 
 		// Get newly activated item
-		var activeMenuItem = self.menuItem(".active");
+		var activeMenuItem = self.menuItem(".active:not(.hidden)");
 
 		// If we are reaching the end of the menu cycle,
 		// select textfield as a visual indication, else
