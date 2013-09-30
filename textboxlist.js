@@ -113,6 +113,16 @@ $.Controller("Textboxlist",
 				.update();
 		},
 
+		enable: function() {
+			self.element.removeClass("disabled");
+			self.textField().enabled(true);
+		},
+
+		disable: function() {
+			self.element.addClass("disabled");
+			self.textField().disabled(true);
+		},
+
 		items: {},
 
 		itemsByTitle: {},
