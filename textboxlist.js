@@ -402,7 +402,7 @@ $.Controller("Textboxlist",
 			if (self.activated) return;
 
 			self.activated = true;
-			self.trigger("activate");
+			self.trigger("textboxlistActivate");
 		},
 
 		"{self} mousedown": function() {
@@ -422,7 +422,7 @@ $.Controller("Textboxlist",
 			self.deactivateTimer =
 				setTimeout(function(){
 					if (self.activated) return;
-					self.trigger("deactivate");
+					self.trigger("textboxlistDeactivate");
 				}, 1);
 		}
 	}}
@@ -967,12 +967,12 @@ function(self) { return {
 		self.viewport().scrollIntoView(activeMenuItem);		
 	},
 
-	"{textboxlist} activate": function(textboxlist) {
+	"{textboxlist} textboxlistActivate": function(textboxlist) {
 
 		self.populateFromTextField();
 	},
 
-	"{textboxlist} deactivate": function(textboxlist) {
+	"{textboxlist} textboxlistDeactivate": function(textboxlist) {
 
 		// Allow user to select menu first
 		setTimeout(function(){
@@ -1027,6 +1027,16 @@ function(self) { return {
 		// Hide the menu
 		self.hide();
 	},
+
+	"{menuItem} mousedown": function() {
+
+		self.textboxlist.focusing = true;
+	},
+
+	"{menuItem} mouseup": function() {
+
+		self.textboxlist.focusing = false;
+	},	
 
 	"{menuItem} click": function(menuItem) {
 
