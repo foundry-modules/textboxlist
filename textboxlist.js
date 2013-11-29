@@ -219,7 +219,7 @@ $.Controller("Textboxlist",
 
 			// If items should be unique,
 			// and this item has already been added to the list
-			if (options.unique && existingItemEl.length > 0) {				
+			if (options.unique && existingItemEl.length > 0) {
 
 				// then use existing item.
 				itemEl = existingItemEl;
@@ -228,8 +228,9 @@ $.Controller("Textboxlist",
 			// Else create a new item
 			if (!itemEl) {
 
-				itemEl = 
+				itemEl =
 					self.view.item(item)
+						.addClass(item.className || "")
 						.attr("data-id", item.id);
 			}
 
@@ -389,7 +390,7 @@ $.Controller("Textboxlist",
 		},
 
 		"{self} click": function(el, event) {
-			
+
 			var textField = self.textField();
 
 			if (!textField.is(event.target)) {
@@ -688,7 +689,7 @@ function(self) { return {
 		var event = self.trigger("populateKeyword", [keyword]);
 		if (event.keyword) { keyword = event.keyword };
 
-		
+
 		var key = (options.caseSensitive) ? keyword : keyword.toLowerCase(),
 			query = self.queries[key];
 
@@ -725,7 +726,7 @@ function(self) { return {
 					});
 
 				// Trigger query event
-				self.trigger("queryKeyword", [query, keyword]);					
+				self.trigger("queryKeyword", [query, keyword]);
 			}
 
 		// If this is a new query
@@ -776,7 +777,7 @@ function(self) { return {
 			autocomplete = self,
 			element = self.element,
 			options = self.options,
-			menu = self.menu();		
+			menu = self.menu();
 
 		// If there are no items, hide menu.
 		if (items.length < 1) {
@@ -822,7 +823,7 @@ function(self) { return {
 				var filterItem = options.filterItem;
 				if ($.isFunction(filterItem)) {
 					item = filterItem.call(self, item, keyword);
-				}	
+				}
 
 				// If the item is not an object,
 				// or item should be discarded, stop.
@@ -831,6 +832,7 @@ function(self) { return {
 				var html = item.menuHtml || item.title;
 
 				self.view.menuItem({html: html})
+					.addClass(item.className || "")
 					.data("item", item)
 					.appendTo(menu);
 			});
@@ -882,7 +884,7 @@ function(self) { return {
 			activeMenuItem = false;
 		}
 
-		var textField = self.textboxlist.textField();		
+		var textField = self.textboxlist.textField();
 
 		switch (event.keyCode) {
 
@@ -931,7 +933,7 @@ function(self) { return {
 				}
 
 				// Prevent up/down keys from changing textfield cursor position.
-				event.preventDefault();					
+				event.preventDefault();
 				break;
 
 			// If escape is pressed,
@@ -964,7 +966,7 @@ function(self) { return {
 		}
 
 		// Scroll menu viewport if it is out of visible area.
-		self.viewport().scrollIntoView(activeMenuItem);		
+		self.viewport().scrollIntoView(activeMenuItem);
 	},
 
 	"{textboxlist} textboxlistActivate": function(textboxlist) {
@@ -999,13 +1001,13 @@ function(self) { return {
 
 			// and we are in exclusive mode
 			// and the last item before we hide the menu
-			// matches the current keyword, 
+			// matches the current keyword,
 			var lastItem = self.lastItem;
 
 			if (exclusive && lastItem && lastItem.keyword==keyword) {
 
 				// then we will automatically use the last
-				// item as the item to be added to the list.					
+				// item as the item to be added to the list.
 				event.item = lastItem.item;
 			}
 
@@ -1036,7 +1038,7 @@ function(self) { return {
 	"{menuItem} mouseup": function() {
 
 		self.textboxlist.focusing = false;
-	},	
+	},
 
 	"{menuItem} click": function(menuItem) {
 
