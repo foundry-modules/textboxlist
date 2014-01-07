@@ -439,7 +439,7 @@ $(document)
 // Textboxlist ends
 
 // Autocomplete starts
-$.template("textboxlist/menu", '<div class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><div class="textboxlist-autocomplete-loading" data-textboxlist-autocomplete-loading></div><div class="textboxlist-autocomplete-empty" data-textboxlist-autocomplete-empty></div><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
+$.template("textboxlist/menu", '<div id="fd" class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><div class="textboxlist-autocomplete-loading" data-textboxlist-autocomplete-loading></div><div class="textboxlist-autocomplete-empty" data-textboxlist-autocomplete-empty></div><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
 $.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
 $.template("textboxlist/loadingHint", '<i class="textboxlist-autocomplete-loading-indicator"></i>');
 $.template("textboxlist/emptyHint", '<span class="textboxlist-autocomplete-empty-text">No items found.</span>');
