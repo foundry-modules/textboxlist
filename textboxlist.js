@@ -431,10 +431,10 @@ $.Controller("Textboxlist",
 
 $(document)
 	.on('click.textboxlist.data-api', '[data-textboxlist]', function(event){
-		$(this).addController($.Controller.TextboxList).textField().focus();
+		$(this).addController($.Controller.Textboxlist).textField().focus();
 	})
 	.on('focus.textboxlist.data-api', '[data-textboxlist] [data-textboxlist-textField]', function(event){
-		$(this).parents("[data-textboxlist]").addController($.Controller.TextboxList);
+		$(this).parents("[data-textboxlist]").addController($.Controller.Textboxlist);
 	});
 // Textboxlist ends
 
@@ -501,6 +501,7 @@ function(self) { return {
 
 			// And reimplement on the context menu we created ourselves
 			self.view.menu()
+				.addClass(self.textboxlist.options.component)
 				.appendTo("body")
 				.data(self.Class.fullName, true)
 				.addController(self.Class, self.options);
