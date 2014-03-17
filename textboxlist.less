@@ -107,8 +107,27 @@
 .textboxlist-autocomplete() {
 	position: absolute;
 	z-index: 99999;
-	.box-shadow(0 3px 2px rgba(0,0,0,.15));
 	margin-top: 8px;
+	overflow: hidden; // To clip sticky shadow
+
+	// Sticky shadow
+	> b {
+		position: absolute;
+		width: 100%;
+		left: 0px;
+		height: 1px;
+		padding: 0px 5px;
+		z-index: 2;
+		display: none;
+
+		> b {
+			height: 5px;
+			width: 100%;
+			margin-top: -5px;
+			.box-shadow(@textboxlistAutocompleteStickyShadow);
+			display: block;
+		}
+	}
 
 	&.loading {
 		.textboxlist-autocomplete-loading {
@@ -133,6 +152,34 @@
 			.textboxlist-autocomplete-empty {
 				display: none;
 			}
+		}
+	}
+
+	&.has-shadow {
+		> b {
+			display: block;
+		}
+	}
+
+	&.has-animation {
+
+		.textboxlist-autocomplete-inner {
+			top: -@textboxlistAutocompleteMaxHeight;
+			.transition(all .1s ease);
+		}
+
+		&.active {
+			top: 0;
+		}
+	}
+
+	&.is-sticky {
+		.textboxlist-autocomplete-inner {
+			border-top: 0px;
+			border-radius: 0px 0px 3px 3px;
+			// weird 1px issue hence 9px
+			// 5px bottom for animation
+			margin: 0px 9px 5px 10px;
 		}
 	}
 }
@@ -167,8 +214,13 @@
 	border-radius: 3px;
 	color: @textboxlistAutocompleteColor;
 	background: @textboxlistAutocompleteBackground;
-    max-height: 150px;
+    max-height: @textboxlistAutocompleteMaxHeight;
     overflow-y: auto;
+
+	position: relative;
+	z-index: 1;
+	.box-shadow(@textboxlistAutocompleteMenuShadow);
+	margin-bottom: 5px; // For shadow
 }
 
 .textboxlist-menu { //ul

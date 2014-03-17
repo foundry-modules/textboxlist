@@ -439,7 +439,7 @@ $(document)
 // Textboxlist ends
 
 // Autocomplete starts
-$.template("textboxlist/menu", '<div id="fd" class="textboxlist-autocomplete" data-textboxlist-autocomplete><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><div class="textboxlist-autocomplete-loading" data-textboxlist-autocomplete-loading></div><div class="textboxlist-autocomplete-empty" data-textboxlist-autocomplete-empty></div><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
+$.template("textboxlist/menu", '<div id="fd" class="textboxlist-autocomplete" data-textboxlist-autocomplete><b><b></b></b><div class="textboxlist-autocomplete-inner" data-textboxlist-autocomplete-viewport><div class="textboxlist-autocomplete-loading" data-textboxlist-autocomplete-loading></div><div class="textboxlist-autocomplete-empty" data-textboxlist-autocomplete-empty></div><ul class="textboxlist-menu" data-textboxlist-menu></ul></div></div>');
 $.template("textboxlist/menuItem", '<li class="textboxlist-menuItem" data-textboxlist-menuItem>[%== html %]</li>');
 $.template("textboxlist/loadingHint", '<i class="textboxlist-autocomplete-loading-indicator"></i>');
 $.template("textboxlist/emptyHint", '<span class="textboxlist-autocomplete-empty-text">No items found.</span>');
@@ -456,15 +456,10 @@ $.Controller("Textboxlist.Autocomplete",
 		},
 
 		cache: true,
-
 		minLength: 1,
-
 		limit: 10,
-
 		highlight: true,
-
 		caseSensitive: false,
-
 		exclusive: false,
 
 		// Accepts url, function or array of objects.
@@ -478,10 +473,15 @@ $.Controller("Textboxlist.Autocomplete",
 		},
 
 		filterItem: null,
-
 		showEmptyHint: false,
-
 		showLoadingHint: false,
+
+		id: "fd",
+		component: "",
+		modifier: "",
+		shadow: false,
+		sticky: false,
+		animation: false,
 
 		"{menu}": "[data-textboxlist-menu]",
 		"{menuItem}": "[data-textboxlist-menuItem]",
@@ -490,7 +490,7 @@ $.Controller("Textboxlist.Autocomplete",
 		"{emptyHint}": "[data-textboxlist-autocomplete-empty]"
 	}
 },
-function(self) { return {
+function(self, opts, base) { return {
 
 	init: function() {
 
@@ -501,6 +501,13 @@ function(self) { return {
 
 			// And reimplement on the context menu we created ourselves
 			self.view.menu()
+				.attr("id", opts.id)
+				.addClass(opts.component)
+				.addClass(opts.modifier)
+				.addClass(opts.shadow ? 'has-shadow' : '')
+				.addClass(opts.animation ? 'has-animation' : '')
+				.addClass(opts.sticky ? 'is-sticky' : '')
+				// This is legacy
 				.addClass(self.textboxlist.options.component)
 				.appendTo("body")
 				.data(self.Class.fullName, true)
