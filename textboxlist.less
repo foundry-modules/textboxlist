@@ -1,83 +1,83 @@
 @import "textboxlist/variables";
 
 .textboxlist {
-	border: 1px solid #ccc;
-	padding: 4px 0 0 4px;
-	border-radius: 3px;
-	min-height: 32px;
-	cursor: text;
-	position: relative;
-	.clearfix();
+    border: 1px solid @textboxlistAutocompleteBorder;
+    padding: 4px 0 0 4px;
+    border-radius: 3px;
+    min-height: 32px;
+    cursor: text;
+    position: relative;
+    .clearfix();
 
-	&.disabled {
-		background-color: #EEEEEE;
-	}
+    &.disabled {
+        background-color: @textboxlistAutocompleteDisabledBackground;
+    }
 }
 
 .textboxlist-textField {
-	height: 22px !important;
-	line-height: 22px !important;
-	// This ensure textbox doesn't overflow container
-	max-width: 100%;
-	float: left;
+    height: 22px !important;
+    line-height: 22px !important;
+    // This ensure textbox doesn't overflow container
+    max-width: 100%;
+    float: left;
 
-	/* reset */
-	border: none !important;
-	padding: 0 !important;
-	margin: 0 0 4px 0 !important;
-	box-shadow: none !important;
-	font-size: 12px !important;
-	background: transparent !important;
+    /* reset */
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 0 4px 0 !important;
+    box-shadow: none !important;
+    font-size: 12px !important;
+    background: transparent !important;
 
-	float: left;
+    float: left;
 }
 
 .textboxlist-itemGroup { //ul
-	margin: 0;
-	padding: 0;
-	.clearfix();
-	list-style: none;
-	li {
-		float: left;
-		list-style: none;
-	}
+    margin: 0;
+    padding: 0;
+    .clearfix();
+    list-style: none;
+    li {
+        float: left;
+        list-style: none;
+    }
 }
 
 .textboxlist-item { //li
-	float: left;
+    float: left;
 
-	background: #E7F3FE;
-	border: 1px solid #C6D5E6;
-	border-radius: 5px;
-	color: #729BCD;
+    background: @textboxlistAutocompleteItemBackground;
+    border: 1px solid @textboxlistAutocompleteItemBorder;
+    border-radius: 5px;
+    color: @textboxlistAutocompleteItemColor;
 
-	position: relative;
-	height: 22px;
-	line-height: 18px;
-	margin: 0px 4px 4px 0px;
-	padding: 0 18px 0 4px;
-	overflow: hidden; // long name issue
+    position: relative;
+    height: 22px;
+    line-height: 18px;
+    margin: 0px 4px 4px 0px;
+    padding: 0 18px 0 4px;
+    overflow: hidden; // long name issue
 
-	// Friend list styling
-	&.list{
-		background: #e9fee7;
-		border: 1px solid #98D895;
-		color: #4EA64A;
-	}
-	.textboxlist-itemContent {
+    // Friend list styling
+    &.list{
+        background: @textboxlistAutocompleteItemListBackground;
+        border: 1px solid @textboxlistAutocompleteItemListBorder;
+        color: @textboxlistAutocompleteItemListColor;
+    }
+    .textboxlist-itemContent {
 
-		img {
-			width: 12px;
-			height: 12px;
-			margin-top: -2px;
-		}
-	}
+        img {
+            width: 12px;
+            height: 12px;
+            margin-top: -2px;
+        }
+    }
 
-	.textboxlist-field { //li
-		margin: 0;
-		padding: 0;
-		white-space: nowrap;
-	}
+    .textboxlist-field { //li
+        margin: 0;
+        padding: 0;
+        white-space: nowrap;
+    }
 }
 
 .textboxlist-itemRemoveButton {
@@ -91,168 +91,168 @@
     cursor: pointer;
 
     &:hover {
-    	opacity: 1;
+        opacity: 1;
     }
 
     > i {
-	    width: 8px !important;
-	    height: 8px !important;
-	    font-size: 8px !important;
-	    margin: 4px 0 0 6px !important;
-	    line-height: 10px !important;
-	    color: #729BCD !important;
+        width: 8px !important;
+        height: 8px !important;
+        font-size: 8px !important;
+        margin: 4px 0 0 6px !important;
+        line-height: 10px !important;
+        color: @textboxlistAutocompleteItemRemoveColor !important;
     }
 }
 
 .textboxlist-autocomplete() {
-	position: absolute;
-	z-index: 99999;
-	margin-top: 8px;
-	overflow: hidden; // To clip sticky shadow
+    position: absolute;
+    z-index: 99999;
+    margin-top: 8px;
+    overflow: hidden; // To clip sticky shadow
 
-	// Sticky shadow
-	> b {
-		position: absolute;
-		width: 100%;
-		left: 0px;
-		height: 1px;
-		padding: 0px 5px;
-		z-index: 2;
-		display: none;
+    // Sticky shadow
+    > b {
+        position: absolute;
+        width: 100%;
+        left: 0px;
+        height: 1px;
+        padding: 0px 5px;
+        z-index: 2;
+        display: none;
 
-		> b {
-			height: 5px;
-			width: 100%;
-			margin-top: -5px;
-			.box-shadow(@textboxlistAutocompleteStickyShadow);
-			display: block;
-		}
-	}
+        > b {
+            height: 5px;
+            width: 100%;
+            margin-top: -5px;
+            .box-shadow(@textboxlistAutocompleteStickyShadow);
+            display: block;
+        }
+    }
 
-	&.loading {
-		.textboxlist-autocomplete-loading {
-			display: block;
-		}
+    &.loading {
+        .textboxlist-autocomplete-loading {
+            display: block;
+        }
 
-		.textboxlist-menu {
-			display: none;
-		}
-	}
+        .textboxlist-menu {
+            display: none;
+        }
+    }
 
-	&.empty {
-		.textboxlist-autocomplete-empty {
-			display: block;
-		}
-		.textboxlist-menu {
-			display: none;
-		}
+    &.empty {
+        .textboxlist-autocomplete-empty {
+            display: block;
+        }
+        .textboxlist-menu {
+            display: none;
+        }
 
-		// Loading takes precendence
-		&.loading {
-			.textboxlist-autocomplete-empty {
-				display: none;
-			}
-		}
-	}
+        // Loading takes precendence
+        &.loading {
+            .textboxlist-autocomplete-empty {
+                display: none;
+            }
+        }
+    }
 
-	&.has-shadow {
-		> b {
-			display: block;
-		}
-	}
+    &.has-shadow {
+        > b {
+            display: block;
+        }
+    }
 
-	&.has-animation {
+    &.has-animation {
 
-		.textboxlist-autocomplete-inner {
-			top: -@textboxlistAutocompleteMaxHeight;
-			.transition(all .1s ease);
-		}
+        .textboxlist-autocomplete-inner {
+            top: -@textboxlistAutocompleteMaxHeight;
+            .transition(all .1s ease);
+        }
 
-		&.active {
-			top: 0;
-		}
-	}
+        &.active {
+            top: 0;
+        }
+    }
 
-	&.is-sticky {
-		.textboxlist-autocomplete-inner {
-			border-top: 0px;
-			border-radius: 0px 0px 3px 3px;
-			// weird 1px issue hence 9px
-			// 5px bottom for animation
-			margin: 0px 9px 5px 10px;
-		}
-	}
+    &.is-sticky {
+        .textboxlist-autocomplete-inner {
+            border-top: 0px;
+            border-radius: 0px 0px 3px 3px;
+            // weird 1px issue hence 9px
+            // 5px bottom for animation
+            margin: 0px 9px 5px 10px;
+        }
+    }
 }
 
 .textboxlist-autocomplete {
-	.textboxlist-autocomplete();
+    .textboxlist-autocomplete();
 }
 
 .textboxlist-autocomplete-loading,
 .textboxlist-autocomplete-empty {
-	display: none;
+    display: none;
 }
 
 .textboxlist-autocomplete-loading-indicator {
-	display: block;
-	padding: 8px 0px;
-	height: 16px;
-	background: url("@{global_uri}/images/loading.gif") center center no-repeat;
+    display: block;
+    padding: 8px 0px;
+    height: 16px;
+    background: url("@{global_uri}/images/loading.gif") center center no-repeat;
 }
 
 .textboxlist-autocomplete-empty-text {
-	padding: 8px 0px;
-	line-height: 16px;
-	font-size: 12px;
-	text-align: center;
-	display: block;
-	color: #888;
+    padding: 8px 0px;
+    line-height: 16px;
+    font-size: 12px;
+    text-align: center;
+    display: block;
+    color: @textboxlistAutocompleteEmptyColor;
 }
 
 .textboxlist-autocomplete-inner {
-	border: 1px solid @textboxlistAutocompleteBorder;
-	border-radius: 3px;
-	color: @textboxlistAutocompleteColor;
-	background: @textboxlistAutocompleteBackground;
+    border: 1px solid @textboxlistAutocompleteBorder;
+    border-radius: 3px;
+    color: @textboxlistAutocompleteColor;
+    background: @textboxlistAutocompleteBackground;
     max-height: @textboxlistAutocompleteMaxHeight;
     overflow-y: auto;
 
-	position: relative;
-	z-index: 1;
-	.box-shadow(@textboxlistAutocompleteMenuShadow);
-	margin-bottom: 5px; // For shadow
+    position: relative;
+    z-index: 1;
+    .box-shadow(@textboxlistAutocompleteMenuShadow);
+    margin-bottom: 5px; // For shadow
 }
 
 .textboxlist-menu { //ul
-	list-style: none !important;
-	margin: 0 !important;
-	padding: 0 !important;
-	background: none !important;
+    list-style: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: none !important;
 
-	.textboxlist-menuItem { //li
-		cursor: pointer;
-		padding: 6px;
-		text-align: left;
-		font-size: 12px;
-		margin: 0;
+    .textboxlist-menuItem { //li
+        cursor: pointer;
+        padding: 6px;
+        text-align: left;
+        font-size: 12px;
+        margin: 0;
 
-		+ .textboxlist-menuItem {
-			border-top: 1px solid #ddd;
-		}
+        + .textboxlist-menuItem {
+            border-top: 1px solid @textboxlistAutocompleteMenuItemBorder;
+        }
 
-		&.active {
-			background: @textboxlistAutocompleteActiveBackground;
-		}
+        &.active {
+            background: @textboxlistAutocompleteActiveBackground;
+        }
 
-		&.hidden {
-			display: none;
-		}
+        &.hidden {
+            display: none;
+        }
 
-		&.list {
-			font-weight: bold;
-			+ .user {
-				border-top: 1px dashed #bbb;
-			}
-		}
-	}
+        &.list {
+            font-weight: bold;
+            + .user {
+                border-top: 1px dashed @textboxlistAutocompleteMenuListUserBorder;
+            }
+        }
+    }
 }
