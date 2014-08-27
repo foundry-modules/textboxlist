@@ -213,7 +213,7 @@ $.Controller("Textboxlist",
 			delete self.itemsByTitle[key];
 		},
 
-		addItem: function(item) {
+		addItem: function(item, force) {
 
 			// Don't add invalid item
 			if (!item) return;
@@ -222,7 +222,9 @@ $.Controller("Textboxlist",
 
 			// If we reached the maximum number of items, skip.
 			var max = options.max;
-			if (max!==null && (self.options.ignoreLocked ? self.item(":not(.is-locked)") : self.item()).length>=max) return;
+			if (!force &&
+				max!==null &&
+				(options.ignoreLocked ? self.item(":not(.is-locked)") : self.item()).length>=max) return;
 
 			// Filter item
 			item = self.filterItem(item);
