@@ -13,9 +13,8 @@ var KEYCODE = {
 	UP: 38
 };
 
-
 // Templates
-$.template("textboxlist/item", '<div class="textboxlist-item" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
+$.template("textboxlist/item", '<div class="textboxlist-item[%== (this.locked) ? " is-locked" : "" %]" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%= name %]" value="[%= id %]"/>');
 
 $.Controller("Textboxlist",
@@ -37,6 +36,7 @@ $.Controller("Textboxlist",
 			unique: true,
 			caseSensitive: false,
 			max: null,
+			ignoreLocked: false,
 
 			// Events
 			filterItem: null,
@@ -81,6 +81,8 @@ $.Controller("Textboxlist",
 					})(),
 
 					title: item.data("title") || $.trim(itemContent.text()),
+
+					locked: item.hasClass("is-locked"),
 
 					html: itemContent.html()
 				});
@@ -127,6 +129,15 @@ $.Controller("Textboxlist",
 
 		itemsByTitle: {},
 
+		get: function(title) {
+
+			var key = self.getItemKey(title);
+
+			if (self.itemsByTitle.hasOwnProperty(key)) {
+				return self.itemsByTitle[key];
+			}
+		},
+
 		getItemKey: function(title){
 
 			return (self.options.caseSensitive) ? title : title.toLowerCase();
@@ -158,9 +169,10 @@ $.Controller("Textboxlist",
 						self.itemsByTitle[key] :
 
 						{
-							id   : $.uid("item-"),
-							title: title,
-							key  : self.getItemKey(title)
+							id    : $.uid("item-"),
+							title : title,
+							key   : self.getItemKey(title),
+							locked: false
 						}
 			}
 
@@ -189,6 +201,10 @@ $.Controller("Textboxlist",
 
 			var item = self.items[id];
 
+			// Remove item from the list
+			self.item().filterBy("id", id)
+				.remove();
+
 			// Remove from items object
 			delete self.items[id];
 
@@ -206,7 +222,7 @@ $.Controller("Textboxlist",
 
 			// If we reached the maximum number of items, skip.
 			var max = options.max;
-			if (max!==null && self.item().length>=max) return;
+			if (max!==null && (self.options.ignoreLocked ? self.item(":not(.is-locked)") : self.item()).length>=max) return;
 
 			// Filter item
 			item = self.filterItem(item);
@@ -236,10 +252,24 @@ $.Controller("Textboxlist",
 
 			self.createItem(item);
 
-			// Add item on to the list
-			itemEl.insertBefore(self.textField());
+			// Locked item always gets added to the beginning
+			if (item.locked) {
+
+				var lastLockedItem = self.item(".is-locked:last");
+
+				if (lastLockedItem.length > 0) {
+					itemEl.insertAfter(lastLockedItem);
+				} else {
+					itemEl.prependTo(self.element);
+				}
+
+			} else {
+				// Add item on to the list
+				itemEl.insertBefore(self.textField());
+			}
 
 			self.trigger("addItem", [item]);
+			self.trigger("listChange");
 
 			return item;
 		},
@@ -248,13 +278,10 @@ $.Controller("Textboxlist",
 
 			var item = self.items[id];
 
-			// Remove item from the list
-			self.item().filterBy("id", id)
-				.remove();
-
 			self.deleteItem(id);
 
 			self.trigger("removeItem", [item]);
+			self.trigger("listChange");
 		},
 
 		clearItems: function() {
@@ -375,8 +402,11 @@ $.Controller("Textboxlist",
 							// If the item before it exists,
 							if (prevItem.length > 0) {
 
-								// Remove the item.
-								self.removeItem(prevItem.data("id"));
+								var id = prevItem.data("id"),
+									item = self.items[id];
+
+								// Remove the item if it is not locked.
+								!item.locked && self.removeItem(id);
 							}
 						}
 					}
