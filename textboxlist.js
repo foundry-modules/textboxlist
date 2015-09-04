@@ -14,7 +14,7 @@ var KEYCODE = {
 };
 
 // Templates
-$.template("textboxlist/item", '<div class="textboxlist-item[%== (this.locked) ? " is-locked" : "" %]" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="ies-cancel-2"></i></a></div>');
+$.template("textboxlist/item", '<div class="textboxlist-item[%== (this.locked) ? " is-locked" : "" %]" data-textboxlist-item><span class="textboxlist-itemContent" data-textboxlist-itemContent>[%== html %]</span><div class="textboxlist-itemRemoveButton" data-textboxlist-itemRemoveButton><i class="fa fa-times"></i></a></div>');
 $.template("textboxlist/itemContent", '[%= title %]<input type="hidden" name="[%= name %]" value="[%= id %]"/>');
 
 $.Controller("Textboxlist",
