@@ -1,10 +1,12 @@
 @import "textboxlist/variables";
 
 .textboxlist {
-    border: 1px solid @textboxlistAutocompleteBorder;
-    padding: 8px;
-    border-radius: 3px;
-    min-height: 32px;
+    border: 1px solid @input-border;
+    min-height: @input-height-small; // Make inputs at least the height of their button counterpart (base line-height + padding + border)
+    padding: @padding-small-vertical @padding-small-horizontal (@padding-small-vertical - @textboxlistItemGap);
+    font-size: @font-size-small;
+    line-height: @line-height-small;
+    border-radius: @border-radius-small;
     cursor: text;
     position: relative;
     .clearfix();
@@ -15,8 +17,8 @@
 }
 
 .textboxlist-textField {
-    height: @textboxlistItemHeight !important;
-    line-height: @textboxlistItemHeight !important;
+    height: @input-height-small - (@padding-small-vertical*2) - 2 !important; // -2 for border top & bottom
+    line-height: @line-height-small !important;
     // This ensure textbox doesn't overflow container
     max-width: 100%;
     float: left;
@@ -24,7 +26,7 @@
     /* reset */
     border: none !important;
     padding: 0 !important;
-    margin: @textboxlistItemGap !important;
+    margin: 0 @textboxlistItemGap 0 0 !important;
     box-shadow: none !important;
     font-size: @textboxlistItemFontSize !important;
     background: transparent !important;
@@ -48,17 +50,15 @@
     float: left;
 
     background: @textboxlistAutocompleteItemBackground;
-    border: 1px solid @textboxlistAutocompleteItemBorder;
-    border-radius: 5px;
+    border-radius: 2px;
     color: @textboxlistAutocompleteItemColor;
-    font-size: @textboxlistItemFontSize;
+    font-size: @font-size-small;
     font-weight: bold;
 
     position: relative;
-    height: @textboxlistItemHeight;
-    line-height: @textboxlistItemHeight - 2; // minus 2px for border top & bottom
-    margin: @textboxlistItemGap; // set for 2px, easier to maintain spacing
-    padding: 0 @textboxlistRemoveBtnWidth/4 0 @textboxlistRemoveBtnWidth;
+    height: @input-height-small - (@padding-small-vertical*2) - 2;
+    line-height: @input-height-small - (@padding-small-vertical*2) - 2; // minus 2px for border top & bottom
+    margin: 0 @textboxlistItemGap*2 @textboxlistItemGap 0; // set for 2px, easier to maintain spacing
     overflow: hidden; // long name issue
 
     // Friend list styling
@@ -71,9 +71,10 @@
     .textboxlist-itemContent {
 
         img {
-            width: 12px;
-            height: 12px;
-            margin-top: -2px;
+            width: @input-height-small - (@padding-small-vertical*2) - 2;
+            height: @input-height-small - (@padding-small-vertical*2) - 2;
+            float: left;
+            margin: 0 @textboxlistItemGap*4 0 0;
         }
     }
 
@@ -82,14 +83,22 @@
         padding: 0;
         white-space: nowrap;
     }
+
+    span, div {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    span {
+        padding: 0 @textboxlistItemGap*2 0 0;
+    }
+
+    div {
+        padding: 0 @textboxlistItemGap*2
+    }
 }
 
 .textboxlist-itemRemoveButton {
-    position: absolute;
-    height: 100%;
-    left: 0;
-    top: 0;
-    width: @textboxlistRemoveBtnWidth;
     opacity: 0.6;
     cursor: pointer;
     text-align: center;
