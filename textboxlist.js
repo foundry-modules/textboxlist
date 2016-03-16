@@ -365,7 +365,12 @@ $.Controller("Textboxlist",
 						// this means the custom keyup event wants to "preventDefault".
 						if (item===false || item===null) return;
 
-						self.addItem(item);
+						// We try to split it by comma (,)
+						var item = item.split(',');
+
+						$.each(item, function(i, item){
+							self.addItem(item);
+						});
 
 						// and clear text field.
 						textField.val("");
